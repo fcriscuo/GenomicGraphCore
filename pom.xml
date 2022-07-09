@@ -11,7 +11,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <bundle.symbolicName.prefix>org.batteryparkdev.cosmicgraphdb</bundle.symbolicName.prefix>
+        <bundle.symbolicName.prefix>org.batteryparkdev.genomicgraphcore</bundle.symbolicName.prefix>
         <timestamp>${maven.build.timestamp}</timestamp>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
         <apache.commons.lang3.version>3.12.0</apache.commons.lang3.version>
@@ -78,16 +78,7 @@
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.github.microutils/kotlin-logging -->
 
-        <!--local dependency for Neo4jService -->
-        <dependency>
-            <groupId>org.batteryparkdev</groupId>
-            <artifactId>cosmicgraphdb</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/cosmicgraphdb-1.0-SNAPSHOT.jar</systemPath>
-        </dependency>
-
-        <!--local dependency for CosminGraphDb -->
+        <!--local dependency for Neo4j services -->
         <dependency>
             <groupId>org.batteryparkdev</groupId>
             <artifactId>Neo4jService</artifactId>
