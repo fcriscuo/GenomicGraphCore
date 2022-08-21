@@ -28,7 +28,7 @@
         <kotlintest.version>1.5.21</kotlintest.version>
         <mockk.version>1.12.0</mockk.version>
         <arrow-kt.version>1.1.2</arrow-kt.version>
-        <ktor.version>1.6.1</ktor.version>
+        <ktor.version>1.6.8</ktor.version>
         <maven.compiler.source>18</maven.compiler.source>
         <maven.compiler.target>18</maven.compiler.target>
     </properties>
@@ -141,9 +141,33 @@
             <artifactId>commons-net</artifactId>
             <version>3.8.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.ktor/ktor-client-apache -->
-        
-        
+        <!-- https://mvnrepository.com/artifact/io.ktor/ktor-client-core-jvm -->
+        <dependency>
+            <groupId>io.ktor</groupId>
+            <artifactId>ktor-client-core-jvm</artifactId>
+            <version>${ktor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.ktor</groupId>
+            <artifactId>ktor-client-apache</artifactId>
+            <version>${ktor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.ktor</groupId>
+            <artifactId>ktor-server-core</artifactId>
+            <version>${ktor.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.ktor/ktor-client -->
+        <dependency>
+            <groupId>io.ktor</groupId>
+            <artifactId>ktor-client</artifactId>
+            <version>${ktor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-kotlin</artifactId>
+            <version>6.3.1</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -336,6 +360,14 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlinx/kotlinx-coroutines-core -->
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-core</artifactId>
+            <version>1.6.4</version>
+            <type>pom</type>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-maven-allopen -->

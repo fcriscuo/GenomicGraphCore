@@ -1,8 +1,9 @@
-package org.batteryparkdev.genomicgraphcore.model
+package org.batteryparkdev.genomicgraphcore.common
 
 import org.batteryparkdev.nodeidentifier.model.NodeIdentifier
 
-interface CoreModel {
+interface CoreModel
+{
     abstract fun getNodeIdentifier(): NodeIdentifier
 
     abstract fun generateLoadModelCypher(): String
