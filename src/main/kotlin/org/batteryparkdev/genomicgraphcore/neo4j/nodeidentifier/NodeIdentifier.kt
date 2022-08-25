@@ -1,6 +1,7 @@
 package org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier
 
-import org.batteryparkdev.neo4j.service.Neo4jUtils
+import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
+
 
 /*
 Represents a data class whose properties contain sufficient information to

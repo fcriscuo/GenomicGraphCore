@@ -10,7 +10,7 @@ fun String.formatNeo4jPropertyValue(): String =
         else -> this
     }
 
-fun String.parseToLNeo4jStringList(sep: Char = '|'): String {
+fun String.parseToNeo4jStringList(sep: Char = '|'): String {
     if (this.isNotEmpty()) {
         val list = this.parseOnDelimiter(sep).map { symbol -> symbol.formatNeo4jPropertyValue() }
         return "[".plus(list.joinToString(separator = ",")).plus("]")

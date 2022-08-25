@@ -7,11 +7,13 @@ import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.csv.CSVRecord
-import org.batteryparkdev.io.CSVRecordSupplier
+import org.batteryparkdev.genomicgraphcore.common.CoreModel
+import org.batteryparkdev.genomicgraphcore.common.CoreModelCreator
+import org.batteryparkdev.genomicgraphcore.common.io.CSVRecordSupplier
 import java.nio.file.Paths
 import kotlin.streams.asSequence
 
-class TestHgncModel {
+class TestHgncModel(val creator: CoreModelCreator) {
     private var nodeCount = 0
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -27,30 +29,30 @@ class TestHgncModel {
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun CoroutineScope.generateHgncModels(records: ReceiveChannel<CSVRecord>) =
-        produce<HgncModel> {
+    fun CoroutineScope.generateModels(records: ReceiveChannel<CSVRecord>) =
+        produce<CoreModel> {
             for (record in records){
-                val hgnc = HgncModel(record)
-                if (hgnc.isValid()){
-                    send(hgnc)
+               val model = creator.createCoreModelFunction(record)
+                if (model.isValid()) {
+                    send(model)
                 }
                 delay(20L)
             }
         }
 
-    fun testHgncModel(filename: String) = runBlocking {
-        val models = generateHgncModels(produceCSVRecords(filename))
+    fun loadModels(filename: String) = runBlocking {
+        val models = generateModels(produceCSVRecords(filename))
         for (model in models) {
             nodeCount += 1
-            if (nodeCount % 20 == 0 ) {
+            if (nodeCount % 50 == 0 ) {
                 println(model.generateLoadModelCypher())
             }
         }
-        println("Approved HGNC record count = $nodeCount")
+        println("Loaded record count for ${creator::class.java.name } = $nodeCount")
     }
 }
 
 fun main (args: Array<String>){
-    val filename = if (args.isNotEmpty()) args[0] else "./data/sample_hgnc_set.tsv"
-    TestHgncModel().testHgncModel(filename)
+    val filename = if (args.isNotEmpty()) args[0] else "/Volumes/SSD870/HGNC/hgnc_complete_set.tsv"
+    TestHgncModel(HgncModel.Companion).loadModels(filename)
 }

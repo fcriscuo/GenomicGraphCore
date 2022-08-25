@@ -3,7 +3,7 @@ package org.batteryparkdev.genomicgraphcore.hgnc
 
 import org.batteryparkdev.genomicgraphcore.common.formatIntList
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
-import org.batteryparkdev.genomicgraphcore.common.parseToLNeo4jStringList
+import org.batteryparkdev.genomicgraphcore.common.parseToNeo4jStringList
 
 class HgncDao (private val hgncModel: HgncModel)  {
 
@@ -28,21 +28,21 @@ class HgncDao (private val hgncModel: HgncModel)  {
                 " locus_type: ${hgncModel.locusType.formatNeo4jPropertyValue()}, " +
                 " location: ${hgncModel.location.formatNeo4jPropertyValue()}, " +
                 " location_sortable: ${hgncModel.locationSortable.formatNeo4jPropertyValue()}," +
-                " alias_symbols: ${hgncModel.aliasSymbol.parseToLNeo4jStringList()}," +
-                " alias_names: ${hgncModel.aliasNames.parseToLNeo4jStringList()}," +
-                " prev_symbols: ${hgncModel.prevSymbols.parseToLNeo4jStringList()}, " +
-                " prev_names: ${hgncModel.prevNames.parseToLNeo4jStringList()}, " +
-                " gene_groups: ${hgncModel.geneGroups.parseToLNeo4jStringList()}, " +
+                " alias_symbols: ${hgncModel.aliasSymbol.parseToNeo4jStringList()}," +
+                " alias_names: ${hgncModel.aliasNames.parseToNeo4jStringList()}," +
+                " prev_symbols: ${hgncModel.prevSymbols.parseToNeo4jStringList()}, " +
+                " prev_names: ${hgncModel.prevNames.parseToNeo4jStringList()}, " +
+                " gene_groups: ${hgncModel.geneGroups.parseToNeo4jStringList()}, " +
                 " gene_group_id: ${hgncModel.geneGroupId}, " +
                 " entrez_id: ${hgncModel.entrezId}, " +
                 " ensembl_gene_id: ${hgncModel.ensemblGeneId.formatNeo4jPropertyValue()}, " +
                 " vega_id: ${hgncModel.vegaId.formatNeo4jPropertyValue()}, " +
                 " ucsc_id: ${hgncModel.ucscId.formatNeo4jPropertyValue()}, " +
-                " enas: ${hgncModel.ena.parseToLNeo4jStringList()}, " +
+                " enas: ${hgncModel.ena.parseToNeo4jStringList()}, " +
                 " refseq_accession: ${hgncModel.refSeqAccession.formatNeo4jPropertyValue()}, " +
-                " ccds_id: ${hgncModel.ccdsId.formatNeo4jPropertyValue()}, " +
-                " pubmed_ids: ${formatIntList(hgncModel.pubmedIds)}, " +
-                " mgd_ids: ${hgncModel.mgdId.parseToLNeo4jStringList()}, " +
+                " ccds_id: ${hgncModel.ccdsId.parseToNeo4jStringList()}, " +
+                " pubmed_ids: [${hgncModel.pubmedIds.joinToString(separator = ",")}], " +
+                " mgd_ids: ${hgncModel.mgdId.parseToNeo4jStringList()}, " +
                 " reg_id: ${hgncModel.regId.formatNeo4jPropertyValue()}, " +
                 " lsdb: ${hgncModel.lsdb.formatNeo4jPropertyValue()}, " +
                 " cosmic: ${hgncModel.cosmic.formatNeo4jPropertyValue()}, " +
@@ -67,7 +67,7 @@ class HgncDao (private val hgncModel: HgncModel)  {
                 " lncipedia: ${hgncModel.lncipedia.formatNeo4jPropertyValue()}, " +
                 " gt_rna_db: ${hgncModel.gtRnaDb.formatNeo4jPropertyValue()}," +
                 " agr: ${hgncModel.agr.formatNeo4jPropertyValue()}, " +
-                " mane_select: ${hgncModel.maneSelect.formatNeo4jPropertyValue()}, " +
+               // " mane_select: ${hgncModel.maneSelect.formatNeo4jPropertyValue()}, " +
                 " gencc: ${hgncModel.gencc.formatNeo4jPropertyValue()}," +
                 " created: datetime()}, " +
                 " { last_mod: datetime()}) YIELD node AS $nodename \n"

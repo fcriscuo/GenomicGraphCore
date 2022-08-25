@@ -1,6 +1,8 @@
 package org.batteryparkdev.genomicgraphcore.common
 
-import org.batteryparkdev.nodeidentifier.model.NodeIdentifier
+import org.apache.commons.csv.CSVRecord
+import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
+
 
 interface CoreModel
 {
@@ -10,7 +12,11 @@ interface CoreModel
 
     abstract fun isValid(): Boolean
 
-    abstract fun getPubMedId(): Int
+    abstract fun getPubMedIds(): List<Int>
 
+}
+
+interface CoreModelCreator {
+    abstract val createCoreModelFunction: (CSVRecord) ->CoreModel
 
 }
