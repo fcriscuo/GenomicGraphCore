@@ -1,23 +1,26 @@
 package org.batteryparkdev.genomicgraphcore.hgnc
 
 
-import org.batteryparkdev.genomicgraphcore.common.formatIntList
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.parseToNeo4jStringList
 
-class HgncDao (private val hgncModel: HgncModel)  {
+/*
+Responsible for data access operations for HGNC data in the Neo4j database
+ */
+class HgncDao(private val hgncModel: HgncModel) {
 
     private final val nodename = "hgnc"
 
     fun generateHgncCypher(): String = generateMergeCypher()
         .plus(" RETURN  $nodename \n")
-    
+
     /*
     Use locus type property as a second label
-    Neo4j does not support multi-word labels  protein-coding gene -> protein-coding_gene
+    Neo4j does not support multi-word labels
+    Replace spaces with underscores: protein-coding gene -> protein-coding_gene
      */
     private fun generateLabels(): String =
-        "\"Hgnc\", \"${hgncModel.locusType.replace(" ","_")}\""
+        "\"Hgnc\", \"${hgncModel.locusType.replace(" ", "_")}\""
 
     private fun generateMergeCypher(): String =
         " CALL apoc.merge.node([${generateLabels()}], " +
@@ -63,13 +66,11 @@ class HgncDao (private val hgncModel: HgncModel)  {
                 " lnc_rna_db: ${hgncModel.lncrnadb.formatNeo4jPropertyValue()}, " +
                 " enzyme_id: ${hgncModel.enzymeId.formatNeo4jPropertyValue()}, " +
                 " intermediate_filament_db: ${hgncModel.intermediateFilamentDb.formatNeo4jPropertyValue()} ," +
-                " rna_central_ids: [${hgncModel.rnaCentralIdList.joinToString (separator = ",")}], " +
+                " rna_central_ids: [${hgncModel.rnaCentralIdList.joinToString(separator = ",")}], " +
                 " lncipedia: ${hgncModel.lncipedia.formatNeo4jPropertyValue()}, " +
                 " gt_rna_db: ${hgncModel.gtRnaDb.formatNeo4jPropertyValue()}," +
                 " agr: ${hgncModel.agr.formatNeo4jPropertyValue()}, " +
-               // " mane_select: ${hgncModel.maneSelect.formatNeo4jPropertyValue()}, " +
                 " gencc: ${hgncModel.gencc.formatNeo4jPropertyValue()}," +
                 " created: datetime()}, " +
                 " { last_mod: datetime()}) YIELD node AS $nodename \n"
-
 }

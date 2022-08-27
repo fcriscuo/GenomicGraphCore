@@ -1,7 +1,7 @@
 package org.batteryparkdev.genomicgraphcore.common
 
 /*
-Represents a collection of utility functions used
+Represents a collection of common utility functions used
 throughout the application
  */
 fun String.formatNeo4jPropertyValue(): String =
