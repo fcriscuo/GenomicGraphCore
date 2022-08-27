@@ -7,7 +7,6 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.parseValidInteger
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
