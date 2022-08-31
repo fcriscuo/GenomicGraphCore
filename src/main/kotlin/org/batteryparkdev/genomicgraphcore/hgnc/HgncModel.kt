@@ -37,11 +37,14 @@ data class HgncModel(
         .and(geneSymbol.isNotEmpty())
         .and(status == "Approved")
 
-
     override fun getPubMedIds(): List<Int> = when (pubmedIds.isEmpty()) {
         true -> emptyList<Int>()
         false -> pubmedIds.map {it.toInt()  }
     }
+
+    override fun getModelGeneSymbol(): String = geneSymbol
+
+    override fun getModelSampleId(): Int = 0
 
     val isApprovedLocus: Boolean = status == "Approved"
     val isApprovedLocusTypeGroup = listOf("protein-coding gene", "non-coding RNA").contains(locusGroup)

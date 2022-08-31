@@ -1,6 +1,5 @@
 package org.batteryparkdev.genomicgraphcore.common.service
 
-import org.batteryparkdev.property.service.Neo4jPropertiesService
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths

@@ -64,20 +64,28 @@ class CoreModelLoader(val creator: CoreModelCreator ) {
                 send(model)
             }
         }
+
     /*
-    Create a relationship to any PubMed Id referenced in the CoreModel implementation
+    Create a relationship to a
+     */
+
+
+    /*
+    Create a relationship to any PubMed Ids referenced in the CoreModel implementation
      */
 
      @OptIn(ExperimentalCoroutinesApi::class)
    private fun CoroutineScope.processPubMedIds(models: ReceiveChannel<CoreModel>)=
-        produce<NodeIdentifier> {
+        produce<CoreModel> {
             for (model in models){
                 if(model.getPubMedIds().isNotEmpty()){
-                    processPublications(model)
+                    model.createPubMedRelationships()
                 }
-                send(model.getNodeIdentifier())
+                send(model)
             }
         }
+
+
     /*
     Public method to process the specified delimited file
      */
