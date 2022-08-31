@@ -69,6 +69,7 @@ fun String.splitPairOnEquals(): Pair<String, String>? {
         false -> null
     }
 }
+fun String.convertNumericToBoolean(): Boolean = this == "1"
 
 fun String.isHumanSpeciesId() = this.trim() == "9606"
 
@@ -91,11 +92,21 @@ fun <T> getLastListElement(list: List<T>): T = list.last()
 fun parseDoubleString(ds: String): Double = ds.replace(',', '.').toDouble()
 
 
-
 fun parseValidDoubleFromString(fs: String): Double =
     when (Regex("[-+]?[0-9]*\\.?[0-9]+").matches(fs)) {
         true -> fs.toDouble()
         else -> 0.0
+    }
+fun String.parseValidDouble(): Double =
+    when (Regex("[-+]?[0-9]*\\.?[0-9]+").matches(this)) {
+    true -> this.toDouble()
+    else -> 0.0
+}
+
+fun String.parseValidFloat(): Float =
+    when (Regex("[-+]?[0-9]*\\.?[0-9]+").matches(this)) {
+        true -> this.toFloat()
+        else -> 0.0F
     }
 
 fun formatIntList(intList: String): String =

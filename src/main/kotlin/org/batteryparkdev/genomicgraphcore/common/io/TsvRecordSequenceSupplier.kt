@@ -3,7 +3,7 @@ package org.batteryparkdev.genomicgraphcore.common.io
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
-import org.batteryparkdev.logging.service.LogService
+import org.batteryparkdev.genomicgraphcore.common.service.LogService
 import java.io.FileReader
 import java.io.IOException
 import java.nio.charset.Charset

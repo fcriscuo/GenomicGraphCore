@@ -1,7 +1,7 @@
 package org.batteryparkdev.genomicgraphcore.common.io
 
 
-import org.batteryparkdev.neo4j.service.Neo4jConnectionService
+import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import org.neo4j.driver.Record
 import java.io.File
 

@@ -1,7 +1,6 @@
 package  org.batteryparkdev.genomicgraphcore.neo4j.service
 
-
-import org.batteryparkdev.property.service.Neo4jPropertiesService
+import org.batteryparkdev.genomicgraphcore.common.service.Neo4jPropertiesService
 import java.io.File
 
 /*

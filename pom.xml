@@ -444,9 +444,8 @@
                         <dependency>
                             <groupId>org.jetbrains.kotlin</groupId>
                             <artifactId>kotlin-maven-noarg</artifactId>
-                            <version>1.5.10</version>
+                            <version>1.7.10</version>
                         </dependency>
-
                     </dependencies>
                 </plugin>
             </plugins>
@@ -472,29 +471,29 @@
         </resources>
 
         <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>2.5.0</version>
-                <executions>
-                    <execution>
-                        <id>xjc</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <xjbSources>
-                        <xjbSource>src/main/resources/global.xjb</xjbSource>
-                    </xjbSources>
-                    <sources>
-                        <source>src/main/xsd/uniprot.xsd</source>
-                    </sources>
-                    <outputDirectory>${basedir}/src/main/java</outputDirectory>
-                    <clearOutputDir>false</clearOutputDir>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>jaxb2-maven-plugin</artifactId>-->
+<!--                <version>2.5.0</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>xjc</id>-->
+<!--                        <goals>-->
+<!--                            <goal>xjc</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <xjbSources>-->
+<!--                        <xjbSource>src/main/resources/global.xjb</xjbSource>-->
+<!--                    </xjbSources>-->
+<!--                    <sources>-->
+<!--                        <source>src/main/xsd/uniprot.xsd</source>-->
+<!--                    </sources>-->
+<!--                    <outputDirectory>${basedir}/src/main/java</outputDirectory>-->
+<!--                    <clearOutputDir>false</clearOutputDir>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
