@@ -28,7 +28,7 @@ data class HgncModel(
     val maneSelect: String, val gencc: String
 ) : CoreModel {
 
-    override fun getNodeIdentifier(): NodeIdentifier = NodeIdentifier("HGNC", "hgnc_id", hgncId)
+    override fun getNodeIdentifier(): NodeIdentifier = NodeIdentifier("Hgnc", "hgnc_id", hgncId)
 
     override fun generateLoadModelCypher(): String = HgncDao(this).generateHgncCypher()
 
@@ -44,7 +44,7 @@ data class HgncModel(
 
     override fun getModelGeneSymbol(): String = geneSymbol
 
-    override fun getModelSampleId(): Int = 0
+    override fun getModelSampleId(): String = ""
 
     val isApprovedLocus: Boolean = status == "Approved"
     val isApprovedLocusTypeGroup = listOf("protein-coding gene", "non-coding RNA").contains(locusGroup)

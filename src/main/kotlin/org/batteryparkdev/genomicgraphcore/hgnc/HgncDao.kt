@@ -1,13 +1,18 @@
 package org.batteryparkdev.genomicgraphcore.hgnc
 
 
+import org.batteryparkdev.genomicgraphcore.common.CoreModel
+import org.batteryparkdev.genomicgraphcore.common.CoreModelDao
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.parseToNeo4jStringList
+import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
+import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
+import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
 
 /*
 Responsible for data access operations for HGNC data in the Neo4j database
  */
-class HgncDao(private val hgncModel: HgncModel) {
+class HgncDao(private val hgncModel: HgncModel){
 
     private final val nodename = "hgnc"
 
@@ -73,4 +78,36 @@ class HgncDao(private val hgncModel: HgncModel) {
                 " gencc: ${hgncModel.gencc.formatNeo4jPropertyValue()}," +
                 " created: datetime()}, " +
                 " { last_mod: datetime()}) YIELD node AS $nodename \n"
+
+    /*
+    Complete the relationships for this Hgnc node
+    Hgnc - [HAS_PUBLICATION] -> Publication
+
+     */
+    companion object: CoreModelDao{
+        fun completeRelationships( model: CoreModel): Unit{
+            createPubMedRelationships(model)
+        }
+
+        private fun createPubMedRelationships(model: CoreModel) {
+            model.getPubMedIds().forEach { pubId ->
+                run {
+                    val parentNodeId = model.getNodeIdentifier()
+                    val pubNodeId = NodeIdentifier("Publication", "pub_id", pubId.toString(), "PubMed")
+                    NodeIdentifierDao.createPlaceholderNode(pubNodeId)
+                    RelationshipDefinition(parentNodeId, pubNodeId, "HAS_PUBLICATION").also {
+                        NodeIdentifierDao.defineRelationship(it)
+                    }
+                }
+            }
+        }
+
+
+        override val modelRelationshipFunctions: (CoreModel) -> Unit
+         = ::completeRelationships
+
+    }
+
+
+
 }

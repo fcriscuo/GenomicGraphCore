@@ -8,9 +8,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.io.CSVRecordSupplier
-import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
-import org.batteryparkdev.genomicgraphcore.neo4j.processPublications
-import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
+import org.batteryparkdev.genomicgraphcore.neo4j.service.CypherLoadChannel.processCypher
 import java.nio.file.Paths
 import kotlin.streams.asSequence
 
@@ -19,7 +17,7 @@ Represents a class that will read a delimited file (e.g. csv, tsv), parse the in
 objects that implement the CosmicModel interface, and then load those model objects into a Neo4j
 database
  */
-class CoreModelLoader(val creator: CoreModelCreator ) {
+class CoreModelLoader(val creator: CoreModelCreator, val dao: CoreModelDao ) {
     private var nodeCount = 0
 
     /*
@@ -53,44 +51,35 @@ class CoreModelLoader(val creator: CoreModelCreator ) {
         }
 
     /*
-    Load the CoreModel object implementations into the Neo
-    4j database
+    Load the CoreModel object implementations into the Neo4j database
      */
     @OptIn(ExperimentalCoroutinesApi::class)
    private  fun CoroutineScope.loadModels(models: ReceiveChannel<CoreModel>) =
         produce<CoreModel> {
             for (model in models) {
-                Neo4jConnectionService.executeCypherCommand(model.generateLoadModelCypher())
+               // Use a Kotlin chanel to perform the database load asynchronously
+                processCypher(model.generateLoadModelCypher())
                 send(model)
             }
         }
 
     /*
-    Create a relationship to a
-     */
-
-
-    /*
-    Create a relationship to any PubMed Ids referenced in the CoreModel implementation
-     */
-
+    Complete custom relationships for this CoreModel
+    */
      @OptIn(ExperimentalCoroutinesApi::class)
-   private fun CoroutineScope.processPubMedIds(models: ReceiveChannel<CoreModel>)=
+   private fun CoroutineScope.processRelationships(models: ReceiveChannel<CoreModel>)=
         produce<CoreModel> {
             for (model in models){
-                if(model.getPubMedIds().isNotEmpty()){
-                    model.createPubMedRelationships()
-                }
+                dao.modelRelationshipFunctions(model)
                 send(model)
             }
         }
-
 
     /*
     Public method to process the specified delimited file
      */
     fun loadDataFile(filename: String) = runBlocking {
-        val identifiers = processPubMedIds(loadModels(generateModels(produceCSVRecords(filename))))
+        val identifiers = processRelationships(loadModels(generateModels(produceCSVRecords(filename))))
         for (identifier in identifiers) {
             nodeCount += 1
             if (nodeCount % 500 == 0 ) {

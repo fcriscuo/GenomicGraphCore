@@ -8,7 +8,7 @@ import java.util.*
 
 object Neo4jPropertiesService
     {
-        private val config = ApplicationProperties("ne04j.config")
+        private val config = ApplicationProperties("neo4j.config")
         val neo4jUri = config.getConfigPropertyAsString("neo4j.uri")
         val neo4jAccount = config.getConfigPropertyAsString("neo4j.account")
         val neo4jPassword = config.getConfigPropertyAsString("neo4j.password")
