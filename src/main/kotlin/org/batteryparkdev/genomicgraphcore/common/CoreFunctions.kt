@@ -69,6 +69,12 @@ fun String.splitPairOnEquals(): Pair<String, String>? {
         false -> null
     }
 }
+fun String.nonEmptyDefault(): String =
+    when (this.isNullOrEmpty()) {
+        true -> "\"\""
+        false -> this
+    }
+
 fun String.convertNumericToBoolean(): Boolean = this == "1"
 
 fun String.isHumanSpeciesId() = this.trim() == "9606"

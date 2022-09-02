@@ -1,9 +1,6 @@
 package org.batteryparkdev.genomicgraphcore.service
 
-import org.batteryparkdev.genomicgraphcore.common.formatIntList
-import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
-import org.batteryparkdev.genomicgraphcore.common.parseOnPipe
-import org.batteryparkdev.genomicgraphcore.common.parseToNeo4jStringList
+import org.batteryparkdev.genomicgraphcore.common.*
 
 
 fun main() {
@@ -25,6 +22,14 @@ fun main() {
     val ints = intListString.split("|")
     ints.map{it.toInt()}.forEach { println(it) }
     println(intListString.split("|").map {it.toInt()  })
+    /*
+     String nonEmptyDefault
+
+     */
+    val s = "XYZ"
+    println(s.nonEmptyDefault())
+    val x: String = ""
+    println(x.nonEmptyDefault())
 
 
 }
