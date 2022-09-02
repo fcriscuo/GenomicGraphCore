@@ -19,7 +19,7 @@ object Neo4jConnectionService {
     private val uri = Neo4jPropertiesService.neo4jUri
     private val logCypher = Neo4jPropertiesService.logCypherCommands
     private val config: Config = Config.builder().withLogging(Logging.slf4j()).build()
-    private val database  = Neo4jPropertiesService.neo4jDatabase
+    private val database = Neo4jPropertiesService.neo4jDatabase
     private val driver = GraphDatabase.driver(
         uri, AuthTokens.basic(Neo4jPropertiesService.neo4jAccount, Neo4jPropertiesService.neo4jPassword),
         config
@@ -30,10 +30,10 @@ object Neo4jConnectionService {
         Neo4jCypherWriter.close()
     }
 
-    fun isSampleContext():Boolean = database == "sample"
+    fun isSampleContext(): Boolean = database == "sample"
 
     // expose the current database name
-    fun getDatabaseName():String = database
+    fun getDatabaseName(): String = database
 
     // provide access to the session
     // should be used within a Java try or Kotlin useclause
@@ -50,6 +50,7 @@ object Neo4jConnectionService {
             }!!
         }
     }
+
     /*
     Function to execute a query that returns multiple results
     Return type is a List of Records
@@ -73,9 +74,30 @@ object Neo4jConnectionService {
         }
     }
 
+    /*
+    Function to asynchronously execute a Cypher load operation
+    Intended to represent the receiver of a Kotlin channel
+     */
+
+    fun executeCypherLoadAsync(command: String): Unit {
+        if (logCypher) {
+            Neo4jCypherWriter.recordCypherCommand(command)
+        }
+        val session = driver.session(SessionConfig.forDatabase(database))
+        session.use {
+            try {
+                session.writeTransaction { tx ->
+                    tx.run(command)
+                }!!
+            } catch (e: Exception) {
+                LogService.logException(e)
+                LogService.logError("Cypher command: $command")
+            }
+        }
+    }
+
     fun executeCypherCommand(command: String): String {
-        if (logCypher)
-         {
+        if (logCypher) {
             Neo4jCypherWriter.recordCypherCommand(command)
         }
         val session = driver.session(SessionConfig.forDatabase(database))
