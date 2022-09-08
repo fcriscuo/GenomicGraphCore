@@ -8,7 +8,7 @@ Represents the data attributes needed to identify two (2) nodes and create a
 specified relationship between them
 
  */
-data class RelationshipDefinition(
+data class RelationshipDefinition (
     val parentNode: NodeIdentifier,
     val childNode: NodeIdentifier,
     val relationshipType: String,
