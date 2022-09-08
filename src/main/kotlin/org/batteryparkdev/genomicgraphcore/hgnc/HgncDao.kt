@@ -102,6 +102,17 @@ class HgncDao(private val hgncModel: HgncModel){
             }
         }
 
+        /*
+        Hgnc nodes typically only have incoming relationships
+        Provide a function that allows any node with an HGNC ID property
+        to establish a HAS_HGNC relationship
+         */
+        fun registerChildRelationshipToHgnc( hgncId: String, relatedModel: CoreModel) {
+            val hgncNode = NodeIdentifier("Hgnc", "hgnc_id", hgncId)
+            NodeIdentifierDao.defineRelationship(RelationshipDefinition(
+                relatedModel.getNodeIdentifier(), hgncNode, "HAS_HGNC"
+            ))
+        }
 
         override val modelRelationshipFunctions: (CoreModel) -> Unit
          = ::completeRelationships
