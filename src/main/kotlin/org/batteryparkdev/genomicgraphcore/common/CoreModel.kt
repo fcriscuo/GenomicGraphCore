@@ -3,6 +3,8 @@ package org.batteryparkdev.genomicgraphcore.common
 import org.apache.commons.csv.CSVRecord
 import org.apache.commons.lang3.RandomStringUtils
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
+import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
+import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
 
 interface CoreModel {
     abstract fun getNodeIdentifier(): NodeIdentifier
@@ -51,5 +53,18 @@ interface CoreModelCreator {
 }
 
 interface CoreModelDao{
+
+   fun createPubMedRelationships(model: CoreModel) {
+        model.getPubMedIds().forEach { pubId ->
+            run {
+                val parentNodeId = model.getNodeIdentifier()
+                val pubNodeId = NodeIdentifier("Publication", "pub_id", pubId.toString(), "PubMed")
+                NodeIdentifierDao.createPlaceholderNode(pubNodeId)
+                RelationshipDefinition(parentNodeId, pubNodeId, "HAS_PUBLICATION").also {
+                    NodeIdentifierDao.defineRelationship(it)
+                }
+            }
+        }
+    }
     abstract val modelRelationshipFunctions: (CoreModel) -> Unit
 }

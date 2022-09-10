@@ -88,20 +88,6 @@ class HgncDao(private val hgncModel: HgncModel){
         fun completeRelationships( model: CoreModel): Unit{
             createPubMedRelationships(model)
         }
-
-        private fun createPubMedRelationships(model: CoreModel) {
-            model.getPubMedIds().forEach { pubId ->
-                run {
-                    val parentNodeId = model.getNodeIdentifier()
-                    val pubNodeId = NodeIdentifier("Publication", "pub_id", pubId.toString(), "PubMed")
-                    NodeIdentifierDao.createPlaceholderNode(pubNodeId)
-                    RelationshipDefinition(parentNodeId, pubNodeId, "HAS_PUBLICATION").also {
-                        NodeIdentifierDao.defineRelationship(it)
-                    }
-                }
-            }
-        }
-
         /*
         Hgnc nodes typically only have incoming relationships
         Provide a function that allows any node with an HGNC ID property
