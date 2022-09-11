@@ -11,6 +11,8 @@ interface CoreModel {
 
     abstract fun generateLoadModelCypher(): String
 
+    abstract fun createModelRelationships()
+
     abstract fun isValid(): Boolean
 
     abstract fun getPubMedIds(): List<Int>

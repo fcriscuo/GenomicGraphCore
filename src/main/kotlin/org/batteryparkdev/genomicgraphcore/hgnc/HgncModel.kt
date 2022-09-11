@@ -32,6 +32,10 @@ data class HgncModel(
 
     override fun generateLoadModelCypher(): String = HgncDao(this).generateHgncCypher()
 
+    override fun createModelRelationships() {
+        HgncDao.modelRelationshipFunctions.invoke(this)
+    }
+
     override fun isValid(): Boolean = hgncId.isNotEmpty()
         .and(geneName.isNotEmpty())
         .and(geneSymbol.isNotEmpty())
