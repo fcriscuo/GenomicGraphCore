@@ -6,8 +6,33 @@ import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDa
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
 
 import java.util.*
+import kotlin.random.Random
 
-object Neo4jUtils {
+object Neo4jUtils
+{
+    fun getUniqueSuffix():String = seq.next()
+
+    private val seq = generateUniqueStringSequence(4).iterator()
+
+    /*
+Excerpted From
+Kotlin Coroutines Deep Dive
+author: Marcin Moskała
+*/
+    private fun generateUniqueStringSequence(
+        length: Int,
+        seed: Long = System.currentTimeMillis()
+    ): Sequence<String> = sequence {
+        val random = Random(seed)
+        val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+        while (true) {
+            val randomString = (1..length)
+                .map { i -> random.nextInt(charPool.size) }
+                .map(charPool::get)
+                .joinToString("");
+            yield(randomString)
+        }
+    }.distinct()
 
     /*
     Function to simplify quoting a String property value for Cypher input

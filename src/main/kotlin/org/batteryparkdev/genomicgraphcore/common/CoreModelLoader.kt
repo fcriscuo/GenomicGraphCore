@@ -17,7 +17,7 @@ Represents a class that will read a delimited file (e.g. csv, tsv), parse the in
 objects that implement the CosmicModel interface, and then load those model objects into a Neo4j
 database
  */
-class CoreModelLoader(val creator: CoreModelCreator, val dao: CoreModelDao ) {
+class CoreModelLoader(val creator: CoreModelCreator) {
     private var nodeCount = 0
 
     /*
@@ -70,7 +70,8 @@ class CoreModelLoader(val creator: CoreModelCreator, val dao: CoreModelDao ) {
    private fun CoroutineScope.processRelationships(models: ReceiveChannel<CoreModel>)=
         produce<CoreModel> {
             for (model in models){
-                dao.modelRelationshipFunctions(model)
+               // dao.modelRelationshipFunctions(model)
+                model.createModelRelationships()
                 send(model)
             }
         }
