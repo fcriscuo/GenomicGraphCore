@@ -1,7 +1,6 @@
 package org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier
 
-import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
-
+import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 
 /*
 Represents a data class whose properties contain sufficient information to
@@ -19,17 +18,17 @@ data class NodeIdentifier(
     fun mergeNodeIdentifierCypher():String =
         when (secondaryLabel.isNotEmpty()){
             true -> "MERGE (n:$primaryLabel:$secondaryLabel{$idProperty: " +
-                    "${Neo4jUtils.formatPropertyValue(idValue)}}) " +
+                    "${idValue.formatNeo4jPropertyValue()}}) " +
                     "RETURN n.$idProperty"
-            false -> "MERGE (n:$primaryLabel {$idProperty: ${Neo4jUtils.formatPropertyValue(idValue)}}) " +
+            false -> "MERGE (n:$primaryLabel {$idProperty: ${idValue.formatNeo4jPropertyValue()}}) " +
                     "RETURN n.$idProperty"
         }
 
     fun addNodeLabelCypher():String =
         "MATCH (child:$primaryLabel{$idProperty:" +
-                " ${Neo4jUtils.formatPropertyValue(idValue)} }) " +
-                " WHERE apoc.label.exists(child,${Neo4jUtils.formatPropertyValue(secondaryLabel)})  = false " +
-                " CALL apoc.create.addLabels(child, [${Neo4jUtils.formatPropertyValue(secondaryLabel)}] )" +
+                " ${idValue.formatNeo4jPropertyValue()} }) " +
+                " WHERE apoc.label.exists(child,${secondaryLabel.formatNeo4jPropertyValue()})  = false " +
+                " CALL apoc.create.addLabels(child, [${secondaryLabel.formatNeo4jPropertyValue()}] )" +
                 " yield node return node"
 
 }

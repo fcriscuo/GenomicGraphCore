@@ -4,11 +4,13 @@ package org.batteryparkdev.genomicgraphcore.common
 Represents a collection of common utility functions used
 throughout the application
  */
-fun String.formatNeo4jPropertyValue(): String =
-    when (this.toIntOrNull()) {
-        null -> "\"$this\""
-        else -> this
+fun String.formatNeo4jPropertyValue(): String {
+    val tmp = this.removeSurrounding("\"")
+  return  when (tmp.toIntOrNull()) {
+        null -> "\"$tmp\""
+        else -> tmp
     }
+}
 
 fun String.parseToNeo4jStringList(sep: Char = '|'): String {
     if (this.isNotEmpty()) {
@@ -18,11 +20,13 @@ fun String.parseToNeo4jStringList(sep: Char = '|'): String {
     return "[]"
 }
 
-fun String.parseValidInteger(): Int =
-    when (this.toIntOrNull()) {
+fun String.parseValidInteger(): Int {
+    val tmp = this.removeSurrounding("\"")
+    return when (tmp.toIntOrNull()) {
         null -> 0
-        else -> this.toInt()
+        else -> tmp.toInt()
     }
+}
 
 /*
   Function to convert a floating point String into a Float

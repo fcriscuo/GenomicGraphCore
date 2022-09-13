@@ -14,7 +14,7 @@ import kotlin.streams.asSequence
 
 /*
 Represents a class that will read a delimited file (e.g. csv, tsv), parse the individual records into
-objects that implement the CosmicModel interface, and then load those model objects into a Neo4j
+objects that implement the CoreModel interface, and then load those model objects into a Neo4j
 database
  */
 class CoreModelLoader(val creator: CoreModelCreator) {
@@ -24,11 +24,12 @@ class CoreModelLoader(val creator: CoreModelCreator) {
     Generate a Sequence of CSVRecord objects from the specified input file
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-   private fun CoroutineScope.produceCSVRecords(filename: String) =
+   private fun CoroutineScope.produceCSVRecords(filename: String, dropCount:Int  = 0) =
         produce<CSVRecord> {
             val path = Paths.get(filename)
             CSVRecordSupplier(path).get()
                 .asSequence()
+                .drop(dropCount)
                 .forEach {
                     send(it)
                     delay(20)
@@ -70,7 +71,6 @@ class CoreModelLoader(val creator: CoreModelCreator) {
    private fun CoroutineScope.processRelationships(models: ReceiveChannel<CoreModel>)=
         produce<CoreModel> {
             for (model in models){
-               // dao.modelRelationshipFunctions(model)
                 model.createModelRelationships()
                 send(model)
             }
@@ -78,13 +78,14 @@ class CoreModelLoader(val creator: CoreModelCreator) {
 
     /*
     Public method to process the specified delimited file
+    // dropCount represents the number of file rows that ere loaded by a previous execution
      */
-    fun loadDataFile(filename: String) = runBlocking {
-        val identifiers = processRelationships(loadModels(generateModels(produceCSVRecords(filename))))
+    fun loadDataFile(filename: String, dropCount: Int = 0) = runBlocking {
+        val identifiers = processRelationships(loadModels(generateModels(produceCSVRecords(filename, dropCount))))
         for (identifier in identifiers) {
             nodeCount += 1
             if (nodeCount % 500 == 0 ) {
-                println("$nodeCount   HGNC: $identifier")
+                println("Node count: $nodeCount   $identifier")
             }
         }
         println("Loaded record count for ${creator::class.java.name }= $nodeCount")

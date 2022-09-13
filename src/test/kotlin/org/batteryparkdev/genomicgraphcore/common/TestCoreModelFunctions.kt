@@ -14,6 +14,12 @@ fun main() {
     println("14q24.3".formatNeo4jPropertyValue())
     println("protein-coding gene".formatNeo4jPropertyValue())
     println("42".formatNeo4jPropertyValue())
+
+    println("\"ABCD\"".formatNeo4jPropertyValue())
+    println("\"8765\"".formatNeo4jPropertyValue())
+
+    println("124567".parseValidInteger())
+    println("\"56454\"".parseValidInteger())
     /*
     fun formatIntList(intList: String): String
      */
