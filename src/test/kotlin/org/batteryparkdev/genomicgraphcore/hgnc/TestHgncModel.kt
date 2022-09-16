@@ -16,8 +16,8 @@ import kotlin.streams.asSequence
 
 fun main (args: Array<String>) {
     val filename = if (args.isNotEmpty()) args[0] else
-        "/Volumes/SSD870/HGNC/hgnc_complete_set.tsv"
-    TestCoreModel(HgncModel.Companion).loadModels(filename)
+        "./data/small_hgnc_set.tsv"
+    TestHgncModel(HgncModel.Companion).loadModels(filename)
 }
 
 class TestHgncModel(val creator: CoreModelCreator) {
@@ -46,14 +46,23 @@ class TestHgncModel(val creator: CoreModelCreator) {
                 delay(20L)
             }
         }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun CoroutineScope.generateCypher(models: ReceiveChannel<CoreModel>) =
+        produce<String> {
+            for (model in models){
+                if (model.isValid()) {
+                    send(model.generateLoadModelCypher())
+                    delay(20)
+                }
+            }
+        }
+
 
     fun loadModels(filename: String) = runBlocking {
-        val models = generateModels(produceCSVRecords(filename))
-        for (model in models) {
+        val cyphers = generateCypher(generateModels(produceCSVRecords(filename)))
+        for (cypher in cyphers) {
             nodeCount += 1
-            if (nodeCount % 50 == 0 ) {
-                println(model.generateLoadModelCypher())
-            }
+            println(cypher)
         }
         println("Loaded record count for ${creator::class.java.name } = $nodeCount")
     }

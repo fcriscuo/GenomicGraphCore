@@ -10,6 +10,7 @@ import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.CoreModel
 import org.batteryparkdev.genomicgraphcore.common.CoreModelCreator
 import org.batteryparkdev.genomicgraphcore.common.io.CSVRecordSupplier
+import org.batteryparkdev.genomicgraphcore.hgnc.HgncModel
 import java.nio.file.Paths
 import kotlin.streams.asSequence
 
@@ -51,4 +52,12 @@ class TestCoreModel (val creator: CoreModelCreator)  {
         }
         println("Loaded record count for ${creator::class.java.name } = $nodeCount")
     }
+}
+
+fun main (args: Array<String>) {
+    val filename = if (args.isNotEmpty()) args[0] else
+        "./data/small_hgnc_set.tsv"
+    TestCoreModel(HgncModel).loadModels(filename)
+    println("FINIS.....")
+
 }

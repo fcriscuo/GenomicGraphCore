@@ -120,10 +120,8 @@ author: Marcin Moskała
         val afterCount = Neo4jConnectionService.executeCypherCommand(
             "MATCH (n: $nodeName) RETURN COUNT (n)"
         )
-        LogService.logInfo(
-            "Deleted $nodeName nodes, before count=${beforeCount.toString()}" +
-                    "  after count=$afterCount"
-        )
+        println("Deleted $nodeName nodes, before count=${beforeCount.toString()}" +
+                    "  after count=$afterCount")
     }
 
     /*******

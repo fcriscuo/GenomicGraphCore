@@ -22,7 +22,7 @@ data class HgncModel(
     val snormabase: String, val bioparadigmsSls: String, val orphanet: Int,
     val pseudogeneOrg: String, val hordeId: String, val merops: String,
     val imgt: String, val iuphar: String, val kznfGeneCatalog: String,
-    val mamitTrnadb: String, val cd: String, val lncrnadb: String, val enzymeIdList: List<String>,
+    val mamitTrnadb: String, val cd: String, val lncrnadb: String, val enzymeIdList: String,
     val intermediateFilamentDb: String, val rnaCentralIdList: List<String>,
     val lncipedia: String, val gtRnaDb: String, val agr: String,
     val maneSelect: String, val gencc: String
@@ -81,7 +81,7 @@ data class HgncModel(
             record.get("pseudogene.org"), record.get("horde_id"),
             record.get("merops"), record.get("imgt"), record.get("iuphar"), record.get("kznf_gene_catalog"),
             record.get("mamit-trnadb"), record.get("cd"), record.get("lncrnadb"),
-            record.get("enzyme_id").parseOnPipe(),
+            record.get("enzyme_id"),
             record.get("intermediate_filament_db"),
             record.get("rna_central_ids").parseOnPipe(),
             record.get("lncipedia"), record.get("gtrnadb"), record.get("agr"),
