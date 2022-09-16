@@ -69,7 +69,7 @@ class HgncDao(private val hgncModel: HgncModel){
                 " mamit_trna_db: ${hgncModel.mamitTrnadb.formatNeo4jPropertyValue()}," +
                 " cd: ${hgncModel.cd.formatNeo4jPropertyValue()}," +
                 " lnc_rna_db: ${hgncModel.lncrnadb.formatNeo4jPropertyValue()}, " +
-                " enzyme_id: ${hgncModel.enzymeId.formatNeo4jPropertyValue()}, " +
+                " enzyme_id: ${hgncModel.enzymeIdList.parseToNeo4jStringList()}, " +
                 " intermediate_filament_db: ${hgncModel.intermediateFilamentDb.formatNeo4jPropertyValue()} ," +
                 " rna_central_ids: [${hgncModel.rnaCentralIdList.joinToString(separator = ",")}], " +
                 " lncipedia: ${hgncModel.lncipedia.formatNeo4jPropertyValue()}, " +
@@ -95,9 +95,11 @@ class HgncDao(private val hgncModel: HgncModel){
          */
         fun registerChildRelationshipToHgnc( hgncId: String, relatedModel: CoreModel) {
             val hgncNode = NodeIdentifier("Hgnc", "hgnc_id", hgncId)
-            NodeIdentifierDao.defineRelationship(RelationshipDefinition(
+            NodeIdentifierDao.defineRelationship(
+                RelationshipDefinition(
                 relatedModel.getNodeIdentifier(), hgncNode, "HAS_HGNC"
-            ))
+            )
+            )
         }
 
         override val modelRelationshipFunctions: (CoreModel) -> Unit

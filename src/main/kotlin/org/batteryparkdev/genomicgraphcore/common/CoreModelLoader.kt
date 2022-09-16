@@ -1,34 +1,35 @@
 package org.batteryparkdev.genomicgraphcore.common
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.io.CSVRecordSupplier
+import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.service.CypherLoadChannel.processCypher
+import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import java.nio.file.Paths
 import kotlin.streams.asSequence
 
 /*
 Represents a class that will read a delimited file (e.g. csv, tsv), parse the individual records into
-objects that implement the CosmicModel interface, and then load those model objects into a Neo4j
+objects that implement the CoreModel interface, and then load those model objects into a Neo4j
 database
  */
-class CoreModelLoader(val creator: CoreModelCreator, val dao: CoreModelDao ) {
+class CoreModelLoader(val creator: CoreModelCreator) {
     private var nodeCount = 0
 
     /*
     Generate a Sequence of CSVRecord objects from the specified input file
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-   private fun CoroutineScope.produceCSVRecords(filename: String) =
+   private fun CoroutineScope.produceCSVRecords(filename: String, dropCount:Int  = 0) =
         produce<CSVRecord> {
             val path = Paths.get(filename)
             CSVRecordSupplier(path).get()
                 .asSequence()
+                .drop(dropCount)
+                .filter { it.size()> 0 }
                 .forEach {
                     send(it)
                     delay(20)
@@ -46,7 +47,7 @@ class CoreModelLoader(val creator: CoreModelCreator, val dao: CoreModelDao ) {
                 if (model.isValid()) {
                     send(model)
                 }
-                delay(20L)
+                delay(40L)
             }
         }
 
@@ -55,37 +56,45 @@ class CoreModelLoader(val creator: CoreModelCreator, val dao: CoreModelDao ) {
      */
     @OptIn(ExperimentalCoroutinesApi::class)
    private  fun CoroutineScope.loadModels(models: ReceiveChannel<CoreModel>) =
-        produce<CoreModel> {
+        produce<NodeIdentifier> {
             for (model in models) {
-               // Use a Kotlin chanel to perform the database load asynchronously
-                processCypher(model.generateLoadModelCypher())
-                send(model)
+                // load the model data into Neo4j, then complete its relationships to
+                // other nodes
+                // The two operations are performed in the same coroutine to avoid race conditions
+                Neo4jConnectionService.executeCypherCommand(model.generateLoadModelCypher())
+                model.createModelRelationships()
+                send(model.getNodeIdentifier())
+                delay(20)
             }
         }
 
     /*
     Complete custom relationships for this CoreModel
     */
-     @OptIn(ExperimentalCoroutinesApi::class)
-   private fun CoroutineScope.processRelationships(models: ReceiveChannel<CoreModel>)=
-        produce<CoreModel> {
-            for (model in models){
-                dao.modelRelationshipFunctions(model)
-                send(model)
-            }
-        }
+//     @OptIn(ExperimentalCoroutinesApi::class)
+//   private fun CoroutineScope.processRelationships(models: ReceiveChannel<CoreModel>)=
+//        produce<NodeIdentifier> {
+//            for (model in models){
+//                delay(1_000)
+//                model.createModelRelationships()
+//                send(model.getNodeIdentifier())
+//                delay(20)
+//            }
+//        }
 
     /*
     Public method to process the specified delimited file
+    // dropCount represents the number of file rows that ere loaded by a previous execution
      */
-    fun loadDataFile(filename: String) = runBlocking {
-        val identifiers = processRelationships(loadModels(generateModels(produceCSVRecords(filename))))
-        for (identifier in identifiers) {
-            nodeCount += 1
-            if (nodeCount % 500 == 0 ) {
-                println("$nodeCount   HGNC: $identifier")
-            }
+    fun loadDataFile(filename: String, dropCount: Int = 0) = runBlocking {
+       val identifiers = loadModels(generateModels(produceCSVRecords(filename, dropCount)))
+        while(identifiers.iterator().hasNext()){
+            nodeCount+= 1
         }
+//        for (identifier in identifiers) {
+//           nodeCount += 1
+//            println(identifier)
+//        }
         println("Loaded record count for ${creator::class.java.name }= $nodeCount")
     }
 }

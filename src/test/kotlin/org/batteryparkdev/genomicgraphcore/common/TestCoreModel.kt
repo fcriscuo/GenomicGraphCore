@@ -1,4 +1,4 @@
-package org.batteryparkdev.genomicgraphcore.hgnc
+package org.batteryparkdev.genomicgraphcore.common
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -9,26 +9,21 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.CoreModel
 import org.batteryparkdev.genomicgraphcore.common.CoreModelCreator
-import org.batteryparkdev.genomicgraphcore.common.TestCoreModel
 import org.batteryparkdev.genomicgraphcore.common.io.CSVRecordSupplier
+import org.batteryparkdev.genomicgraphcore.hgnc.HgncModel
 import java.nio.file.Paths
 import kotlin.streams.asSequence
 
-fun main (args: Array<String>) {
-    val filename = if (args.isNotEmpty()) args[0] else
-        "./data/small_hgnc_set.tsv"
-    TestHgncModel(HgncModel.Companion).loadModels(filename)
-}
-
-class TestHgncModel(val creator: CoreModelCreator) {
-    private var nodeCount = 0
+class TestCoreModel (val creator: CoreModelCreator)  {
+    var nodeCount = 0
+    private val LIMIT = 400L
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun CoroutineScope.produceCSVRecords(filename: String) =
+    private fun CoroutineScope.produceCSVRecords(filename: String) =
         produce<CSVRecord> {
             val path = Paths.get(filename)
-            CSVRecordSupplier(path).get()
-                .asSequence()
+            CSVRecordSupplier(path).get().limit(LIMIT).asSequence()
+                .filter { it.size() > 1 }
                 .forEach {
                     send(it)
                     delay(20)
@@ -39,31 +34,30 @@ class TestHgncModel(val creator: CoreModelCreator) {
     fun CoroutineScope.generateModels(records: ReceiveChannel<CSVRecord>) =
         produce<CoreModel> {
             for (record in records){
-               val model = creator.createCoreModelFunction(record)
+                val model = creator.createCoreModelFunction(record)
                 if (model.isValid()) {
                     send(model)
                 }
                 delay(20L)
             }
         }
-    @OptIn(ExperimentalCoroutinesApi::class)
-    fun CoroutineScope.generateCypher(models: ReceiveChannel<CoreModel>) =
-        produce<String> {
-            for (model in models){
-                if (model.isValid()) {
-                    send(model.generateLoadModelCypher())
-                    delay(20)
-                }
-            }
-        }
-
 
     fun loadModels(filename: String) = runBlocking {
-        val cyphers = generateCypher(generateModels(produceCSVRecords(filename)))
-        for (cypher in cyphers) {
+        val models = generateModels(produceCSVRecords(filename))
+        for (model in models) {
             nodeCount += 1
-            println(cypher)
+            if (nodeCount % 50 == 0 ) {
+                println(model.generateLoadModelCypher())
+            }
         }
         println("Loaded record count for ${creator::class.java.name } = $nodeCount")
     }
+}
+
+fun main (args: Array<String>) {
+    val filename = if (args.isNotEmpty()) args[0] else
+        "./data/small_hgnc_set.tsv"
+    TestCoreModel(HgncModel).loadModels(filename)
+    println("FINIS.....")
+
 }

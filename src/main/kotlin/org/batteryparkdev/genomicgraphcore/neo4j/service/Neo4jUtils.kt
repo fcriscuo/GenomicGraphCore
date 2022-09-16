@@ -1,13 +1,43 @@
 package  org.batteryparkdev.genomicgraphcore.neo4j.service
 
+import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.service.LogService
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
 
 import java.util.*
+import kotlin.random.Random
 
-object Neo4jUtils {
+object Neo4jUtils
+{
+    fun getUniqueSuffix():String = seq.next()
+
+    private val seq = generateUniqueStringSequence(4).iterator()
+
+    /*
+Excerpted From
+Kotlin Coroutines Deep Dive
+author: Marcin Moskała
+*/
+    private fun generateUniqueStringSequence(
+        length: Int,
+        seed: Long = System.currentTimeMillis()
+    ): Sequence<String> = sequence {
+        val random = Random(seed)
+        val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+        while (true) {
+            val randomString = (1..length)
+                .map { i -> random.nextInt(charPool.size) }
+                .map(charPool::get)
+                .joinToString("");
+            yield(randomString)
+        }
+    }.distinct()
+
+   fun resolveNodeCountByLabel(label: String): Int =
+        Neo4jConnectionService.executeCypherCommand("MATCH (n: $label) " +
+                "RETURN Count(n)").toIntOrNull()?: 0
 
     /*
     Function to simplify quoting a String property value for Cypher input
@@ -19,17 +49,6 @@ object Neo4jUtils {
     fun formatQuotedString(input:String):String =
         "\"" + input +"\""
 
-    /*
-   Function that will quote a Neo4j property value if it
-   is not numeric.
-   Simplifies embedding property values into Cypher statements
-    */
-    fun formatPropertyValue(propertyValue: String): String {
-        return when (propertyValue.toIntOrNull()) {
-            null -> "\"$propertyValue\""
-            else -> propertyValue
-        }
-    }
     /*******
     LABEL related functions
     ******/
@@ -43,7 +62,6 @@ object Neo4jUtils {
         level = DeprecationLevel.ERROR)
     fun addSecondaryNodeLabel(nodeId: NodeIdentifier) = addLabelToNode(nodeId)
 
-
     /*
     Utility method to add a secondary label to an existing node if the
     new label is novel
@@ -51,7 +69,7 @@ object Neo4jUtils {
     private fun addLabelToNode(node: NodeIdentifier) {
         if (node.isValid().and(node.secondaryLabel.isNotBlank())){
             val cypher = "MATCH (child:${node.primaryLabel}{${node.idProperty}:" +
-                    " ${formatPropertyValue(node.idValue)} }) " +
+                    " ${node.idValue.formatNeo4jPropertyValue()} }) " +
                     " WHERE apoc.label.exists(child,\"${node.secondaryLabel}\")  = false " +
                     " CALL apoc.create.addLabels(child, [\"${node.secondaryLabel}\"] )" +
                     " yield node return node"
@@ -86,7 +104,7 @@ object Neo4jUtils {
     fun deleteNodeById(nodeId: NodeIdentifier) {
         if (nodeId.isValid()) {
             val cypher = "MATCH (n:${nodeId.primaryLabel}) WHERE n.${nodeId.idProperty} " +
-                    " = ${formatPropertyValue(nodeId.idValue)} DETACH DELETE(n)"
+                    " = ${nodeId.idValue.formatNeo4jPropertyValue()} DETACH DELETE(n)"
             Neo4jConnectionService.executeCypherCommand(cypher)
         }
     }
@@ -102,10 +120,8 @@ object Neo4jUtils {
         val afterCount = Neo4jConnectionService.executeCypherCommand(
             "MATCH (n: $nodeName) RETURN COUNT (n)"
         )
-        LogService.logInfo(
-            "Deleted $nodeName nodes, before count=${beforeCount.toString()}" +
-                    "  after count=$afterCount"
-        )
+        println("Deleted $nodeName nodes, before count=${beforeCount.toString()}" +
+                    "  after count=$afterCount")
     }
 
     /*******
@@ -152,7 +168,7 @@ Utility function to determine if a specified node is in the database
             true -> {
                 val cypher = "OPTIONAL MATCH (node:${nodeId.primaryLabel}{" +
                         "${nodeId.idProperty}:" +
-                        "${formatPropertyValue(nodeId.idValue)}}) " +
+                        "${nodeId.idValue.formatNeo4jPropertyValue()}}) " +
                         " RETURN node IS NOT NULL AS Predicate"
                 return try {
                     Neo4jConnectionService.executeCypherCommand(cypher).toBoolean()

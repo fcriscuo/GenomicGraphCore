@@ -1,7 +1,6 @@
 package org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier
 
-import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
-
+import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 
 /*
 Represents the data attributes needed to identify two (2) nodes and create a
@@ -19,9 +18,9 @@ data class RelationshipDefinition (
 
     fun generateRelationshipCypher() =
         "MERGE (p: ${parentNode.primaryLabel}{ ${parentNode.idProperty}: " +
-                "${Neo4jUtils.formatPropertyValue(parentNode.idValue)}}) " +
+                "${parentNode.idValue.formatNeo4jPropertyValue()}}) " +
                 " MERGE (c: ${childNode.primaryLabel}{ ${childNode.idProperty}: " +
-                "${Neo4jUtils.formatPropertyValue(childNode.idValue)} })" +
+                "${childNode.idValue.formatNeo4jPropertyValue()} })" +
                 "MERGE (p) -[r: ${relationshipType} ] -> (c) " +
                 "RETURN p.${parentNode.idProperty} "
 
@@ -29,9 +28,9 @@ data class RelationshipDefinition (
         "MATCH (parent:${parentNode.primaryLabel}), " +
                 " (child:${childNode.primaryLabel}) WHERE " +
                 " parent.${parentNode.idProperty} = " +
-                "${Neo4jUtils.formatPropertyValue(parentNode.idValue)} " +
+                "${parentNode.idValue.formatNeo4jPropertyValue()} " +
                 " AND child.${childNode.idProperty} = " +
-                "${Neo4jUtils.formatPropertyValue(childNode.idValue)} " +
+                "${childNode.idValue.formatNeo4jPropertyValue()} " +
                 " MATCH  (parent) -[r:${relationshipType}] -> (child) " +
                 " DELETE r "
 }
