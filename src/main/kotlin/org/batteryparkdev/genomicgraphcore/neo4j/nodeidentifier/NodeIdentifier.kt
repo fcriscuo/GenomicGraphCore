@@ -31,4 +31,8 @@ data class NodeIdentifier(
                 " CALL apoc.create.addLabels(child, [${secondaryLabel.formatNeo4jPropertyValue()}] )" +
                 " yield node return node"
 
+
+    fun mapNodeIdentifierToCypherString():String =
+        "(:$primaryLabel { $idProperty: ${idValue.formatNeo4jPropertyValue()}})"
+
 }

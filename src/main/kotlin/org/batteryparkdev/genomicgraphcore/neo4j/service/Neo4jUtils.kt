@@ -1,6 +1,7 @@
 package  org.batteryparkdev.genomicgraphcore.neo4j.service
 
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
+import org.batteryparkdev.genomicgraphcore.common.predicateToBoolean
 import org.batteryparkdev.genomicgraphcore.common.service.LogService
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
@@ -180,6 +181,23 @@ Utility function to determine if a specified node is in the database
             false -> LogService.logWarn("Invalid NodeIdentifier: $nodeId")
         }
         return false
+    }
+
+    /*
+    Utility method to determine if a relationship exists in either direction
+    This is to avoid redundant non-directed relationships when data is loaded
+    sequentially
+    eq if A -[RELATES_TO] - B, avoid B - [RELATES_TO] - A
+     */
+    fun relationshipExistsPredicate(relDef: RelationshipDefinition):Boolean {
+        // RETURN EXISTS( (:Person {userId: {0}})-[:KNOWS]-(:Person {userId: {1}}) )
+        if (Neo4jConnectionService.executeCypherCommand(
+                "RETURN EXISTS( ${relDef.mapRelationshipDefinitionToCypher().first} ) ").predicateToBoolean()) {
+            return true
+        } else {
+            return Neo4jConnectionService.executeCypherCommand(
+                "RETURN EXISTS( ${relDef.mapRelationshipDefinitionToCypher().second} ) ").predicateToBoolean()
+        }
     }
 
     /*

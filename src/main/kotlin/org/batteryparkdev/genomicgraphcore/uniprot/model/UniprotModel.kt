@@ -8,7 +8,8 @@ import org.batteryparkdev.genomicgraphcore.uniprot.dao.UniprotModelDao
 
 data class UniprotModel(
     val entryId: String, val entryName: String, val proteinNames: String,
-    val geneNames: String, val length: Int, val pubmedIds: List<Int>
+    val geneNames: String, val length: Int, val pubmedIds: List<Int>,
+    val interactList: List<String>
 ) : CoreModel {
     override fun getNodeIdentifier(): NodeIdentifier = NodeIdentifier("UniProt", "entry_id", entryId)
 
@@ -43,7 +44,8 @@ data class UniprotModel(
                 parseProteinNames( record.get("Protein names")),
                 record.get("Gene Names"),
                 record.get("Length").toInt(),
-                record.get("PubMed ID").parseOnSemicolon().map { it.toInt() }
+                record.get("PubMed ID").parseOnSemicolon().map { it.toInt() },
+                record.get("Interacts with").parseOnSemicolon()
             )
         override val createCoreModelFunction: (CSVRecord) -> CoreModel = ::parseCsvRecord
     }

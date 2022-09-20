@@ -1,5 +1,7 @@
 package org.batteryparkdev.genomicgraphcore.common
 
+import java.util.*
+
 /*
 Represents a collection of common utility functions used
 throughout the application
@@ -12,6 +14,20 @@ fun String.formatNeo4jPropertyValue(): String {
     }
 }
 
+/*
+Specialized function that encapsulates all members of a delimited String
+Necessary for delimited Strings that may contain numeric values
+Neo4j cannot process arrays with mixed members
+ */
+fun String.parseToQuotedNeo4jStringList(sep: Char = '|'): String {
+    if (this.isNotEmpty()){
+        val list = this.parseOnDelimiter(sep).map { symbol -> "\"".plus(symbol).plus("\"") }
+        return "[".plus(list.joinToString(separator = ",")).plus("]")
+    } else  {
+        return "[]"
+    }
+}
+
 fun String.parseToNeo4jStringList(sep: Char = '|'): String {
     if (this.isNotEmpty()) {
         val list = this.parseOnDelimiter(sep).map { symbol -> symbol.formatNeo4jPropertyValue() }
@@ -19,6 +35,12 @@ fun String.parseToNeo4jStringList(sep: Char = '|'): String {
     }
     return "[]"
 }
+
+fun String.predicateToBoolean():Boolean =
+    when (this.lowercase(Locale.getDefault())) {
+        "true" ->  true
+        else ->  false
+    }
 
 fun String.parseValidInteger(): Int {
     val tmp = this.removeSurrounding("\"")
