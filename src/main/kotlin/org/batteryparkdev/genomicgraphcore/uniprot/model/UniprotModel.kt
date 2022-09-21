@@ -9,9 +9,13 @@ import org.batteryparkdev.genomicgraphcore.uniprot.dao.UniprotModelDao
 data class UniprotModel(
     val entryId: String, val entryName: String, val proteinNames: String,
     val geneNames: String, val length: Int, val pubmedIds: List<Int>,
-    val interactList: List<String>
+    val interactList: List<String>, val hgncId: String
 ) : CoreModel {
-    override fun getNodeIdentifier(): NodeIdentifier = NodeIdentifier("UniProt", "entry_id", entryId)
+
+    override val idPropertyValue: String = this.entryId
+    override fun getNodeIdentifier(): NodeIdentifier = generateNodeIdentifierByModel(UniprotModel,this)
+
+    //override fun getNodeIdentifier(): NodeIdentifier = NodeIdentifier("UniProt", "entry_id", entryId)
 
     override fun generateLoadModelCypher(): String = UniprotModelDao(this).generateUniprotCypher()
 
@@ -32,7 +36,15 @@ data class UniprotModel(
 
     companion object : CoreModelCreator {
 
-        val nodename = "uniprot"
+        override val nodename = "uniprot"
+        override val nodelabel: String
+            get() = "UniProt"
+        override val nodeIdProperty: String
+            get() = "entryId"
+
+
+        override fun generateNodeIdentifierByValue(idValue: String): NodeIdentifier =
+            NodeIdentifier("UniProt", "entry_id", idValue)
 
         private fun parseProteinNames( names: String): String =
             names.replace('(','|').replace(")","")
@@ -45,7 +57,8 @@ data class UniprotModel(
                 record.get("Gene Names"),
                 record.get("Length").toInt(),
                 record.get("PubMed ID").parseOnSemicolon().map { it.toInt() },
-                record.get("Interacts with").parseOnSemicolon()
+                record.get("Interacts with").parseOnSemicolon(),
+                record.get("HGNC")
             )
         override val createCoreModelFunction: (CSVRecord) -> CoreModel = ::parseCsvRecord
     }

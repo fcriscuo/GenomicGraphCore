@@ -8,7 +8,7 @@ fun deleteTestNodes(nodeLabelList: List<String>): Unit =
     nodeLabelList.forEach { label -> Neo4jUtils.detachAndDeleteNodesByName(label) }
 
 fun main(args: Array<String>) {
-    val filename = if (args.isNotEmpty()) args[0] else "./data/small_hgnc_set.tsv"
+    val filename = if (args.isNotEmpty()) args[0] else "/Volumes/SSD870/HGNC/hgnc_complete_set.tsv"
     if (Neo4jConnectionService.isSampleContext()) {
         deleteTestNodes(listOf("Hgnc"))
         println("Loading data from sample file: $filename")

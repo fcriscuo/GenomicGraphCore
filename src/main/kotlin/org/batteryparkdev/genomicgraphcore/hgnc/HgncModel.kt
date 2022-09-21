@@ -28,7 +28,9 @@ data class HgncModel(
     val maneSelect: String, val gencc: String
 ) : CoreModel {
 
-    override fun getNodeIdentifier(): NodeIdentifier = NodeIdentifier("Hgnc", "hgnc_id", hgncId)
+    override val idPropertyValue: String = this.hgncId
+
+    override fun getNodeIdentifier(): NodeIdentifier = generateNodeIdentifierByModel(HgncModel, this)
 
     override fun generateLoadModelCypher(): String = HgncDao(this).generateHgncCypher()
 
@@ -55,7 +57,14 @@ data class HgncModel(
 
     companion object : CoreModelCreator {
 
-        val nodename = "hgnc"   // used as a variable in Cypher statements for this entity
+        override val nodename = "hgnc"
+        override val nodelabel: String
+            get() = "Hgnc"
+        override val nodeIdProperty: String
+            get() = "hgnc"
+
+        override fun generateNodeIdentifierByValue(idValue: String): NodeIdentifier =
+            NodeIdentifier(nodelabel, nodeIdProperty, idValue)
 
         fun parseCsvRecord(record: CSVRecord): CoreModel = HgncModel(
             record.get("hgnc_id"), record.get("name"), record.get("symbol"),
