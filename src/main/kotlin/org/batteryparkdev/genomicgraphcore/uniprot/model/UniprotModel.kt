@@ -40,11 +40,10 @@ data class UniprotModel(
         override val nodelabel: String
             get() = "UniProt"
         override val nodeIdProperty: String
-            get() = "entryId"
+            get() = "entry_id"
 
-
-        override fun generateNodeIdentifierByValue(idValue: String): NodeIdentifier =
-            NodeIdentifier("UniProt", "entry_id", idValue)
+//        override fun generateNodeIdentifierByValue(idValue: String): NodeIdentifier =
+//            NodeIdentifier("UniProt", "entry_id", idValue)
 
         private fun parseProteinNames( names: String): String =
             names.replace('(','|').replace(")","")
@@ -58,7 +57,7 @@ data class UniprotModel(
                 record.get("Length").toInt(),
                 record.get("PubMed ID").parseOnSemicolon().map { it.toInt() },
                 record.get("Interacts with").parseOnSemicolon(),
-                record.get("HGNC")
+                record.get("HGNC").replace(";","")
             )
         override val createCoreModelFunction: (CSVRecord) -> CoreModel = ::parseCsvRecord
     }

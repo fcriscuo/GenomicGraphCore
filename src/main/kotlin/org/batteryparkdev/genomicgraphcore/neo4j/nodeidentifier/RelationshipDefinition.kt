@@ -36,10 +36,10 @@ data class RelationshipDefinition (
 
     fun mapRelationshipDefinitionToCypher(): Pair<String,String> {
         val cypher1 = parentNode.mapNodeIdentifierToCypherString()
-            .plus(" -[$relationshipType] - ")
+            .plus(" -[:$relationshipType] - ")
             .plus(childNode.mapNodeIdentifierToCypherString())
         val cypher2 =  childNode.mapNodeIdentifierToCypherString()
-            .plus(" -[$relationshipType] - ")
+            .plus(" -[:$relationshipType] - ")
             .plus(parentNode.mapNodeIdentifierToCypherString())
         return Pair(cypher1,cypher2)
     }

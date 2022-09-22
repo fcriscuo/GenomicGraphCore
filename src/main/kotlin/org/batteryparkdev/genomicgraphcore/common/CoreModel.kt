@@ -61,7 +61,8 @@ interface CoreModelCreator {
     abstract val nodename: String
     abstract val nodelabel: String
     abstract val nodeIdProperty: String
-    abstract fun generateNodeIdentifierByValue(value:String): NodeIdentifier
+    fun generateNodeIdentifierByValue(idValue: String): NodeIdentifier =
+        NodeIdentifier(nodelabel, nodeIdProperty, idValue)
 }
 
 interface CoreModelDao{

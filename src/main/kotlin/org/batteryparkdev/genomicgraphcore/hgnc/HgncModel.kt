@@ -61,10 +61,10 @@ data class HgncModel(
         override val nodelabel: String
             get() = "Hgnc"
         override val nodeIdProperty: String
-            get() = "hgnc"
+            get() = "hgnc_id"
 
-        override fun generateNodeIdentifierByValue(idValue: String): NodeIdentifier =
-            NodeIdentifier(nodelabel, nodeIdProperty, idValue)
+//        override fun generateNodeIdentifierByValue(idValue: String): NodeIdentifier =
+//            NodeIdentifier(nodelabel, nodeIdProperty, idValue)
 
         fun parseCsvRecord(record: CSVRecord): CoreModel = HgncModel(
             record.get("hgnc_id"), record.get("name"), record.get("symbol"),
