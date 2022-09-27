@@ -2,6 +2,9 @@ package org.batteryparkdev.genomicgraphcore.hgnc
 
 import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.*
+import org.batteryparkdev.genomicgraphcore.common.datamining.FtpClient
+import org.batteryparkdev.genomicgraphcore.common.io.RefinedFilePath
+import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 
 
@@ -98,6 +101,13 @@ data class HgncModel(
         )
 
         override val createCoreModelFunction: (CSVRecord) -> CoreModel = ::parseCsvRecord
+
+        fun retrieveRemoteDataFile(): String {
+            val ftpUrl = FilesPropertyService.hgncFtpUrl
+            val hgncFileName = FilesPropertyService.hgncLocalCompleteSetFilename
+            FtpClient.retrieveRemoteFileByFtpUrl(ftpUrl, RefinedFilePath(hgncFileName))
+            return hgncFileName
+        }
 
 
     }

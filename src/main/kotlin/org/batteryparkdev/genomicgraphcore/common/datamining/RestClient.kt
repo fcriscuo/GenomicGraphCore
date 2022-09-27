@@ -1,16 +1,14 @@
 package org.batteryparkdev.genomicgraphcore.common.datamining
 
-import io.ktor.client.HttpClient
-import io.ktor.client.request.request
-import io.ktor.client.request.url
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.HttpMethod
-import io.ktor.http.isSuccess
-import io.ktor.util.cio.writeChannel
-import io.ktor.utils.io.copyAndClose
-import io.ktor.client.engine.apache.Apache
+import io.ktor.client.*
+import io.ktor.client.engine.apache.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.util.cio.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
+import org.batteryparkdev.genomicgraphcore.common.service.LogService
 import java.io.File
 import java.io.IOException
 import java.net.URL
@@ -18,7 +16,6 @@ import java.net.URL
 /**
  * Copied over from legacy project 2022Jul26
  */
-private val logger = KotlinLogging.logger {}
 
 data class HttpClientException(val response: HttpResponse) : IOException("HTTP Error ${response.status}")
 
@@ -30,7 +27,7 @@ fun loadFileFromUrl(fileName: String, url: String): Int {
         }
         client.getAsFile(fileName, url) { file ->
             lineCount = file.readLines().size
-            logger.info { "File at ${file.absolutePath} line count = $lineCount" }
+            LogService.logInfo("File at ${file.absolutePath} line count = $lineCount" )
 
         }
     }
@@ -58,3 +55,4 @@ private suspend fun HttpClient.getAsFile(fileName: String, url: String): File {
     response.content.copyAndClose(file.writeChannel())
     return file
 }
+

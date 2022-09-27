@@ -2,6 +2,9 @@ package org.batteryparkdev.genomicgraphcore.uniprot.model
 
 import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.*
+import org.batteryparkdev.genomicgraphcore.common.datamining.FtpClient
+import org.batteryparkdev.genomicgraphcore.common.io.RefinedFilePath
+import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.uniprot.dao.UniprotModelDao
 
@@ -14,8 +17,6 @@ data class UniprotModel(
 
     override val idPropertyValue: String = this.entryId
     override fun getNodeIdentifier(): NodeIdentifier = generateNodeIdentifierByModel(UniprotModel,this)
-
-    //override fun getNodeIdentifier(): NodeIdentifier = NodeIdentifier("UniProt", "entry_id", entryId)
 
     override fun generateLoadModelCypher(): String = UniprotModelDao(this).generateUniprotCypher()
 
@@ -42,9 +43,6 @@ data class UniprotModel(
         override val nodeIdProperty: String
             get() = "entry_id"
 
-//        override fun generateNodeIdentifierByValue(idValue: String): NodeIdentifier =
-//            NodeIdentifier("UniProt", "entry_id", idValue)
-
         private fun parseProteinNames( names: String): String =
             names.replace('(','|').replace(")","")
 
@@ -60,5 +58,16 @@ data class UniprotModel(
                 record.get("HGNC").replace(";","")
             )
         override val createCoreModelFunction: (CSVRecord) -> CoreModel = ::parseCsvRecord
+
+        /*
+        Function to retrieve a TSV data file from UniProt
+        core attributes
+         */
+        fun retrieveRemoteDataFile(): String {
+            val restUrl = FilesPropertyService.uniprotRestUrl
+            val uniprotFileName = FilesPropertyService.uniprotLocalFilename
+            FtpClient.retrieveRemoteFileByFtpUrl(restUrl, RefinedFilePath(uniprotFileName))
+            return uniprotFileName
+        }
     }
 }

@@ -14,8 +14,7 @@ import java.nio.file.Paths
 import kotlin.streams.asSequence
 
 fun main (args: Array<String>) {
-    val filename = if (args.isNotEmpty()) args[0] else
-        "/Volumes/SSD870/data/UniProt/uniprot-2022.09.16-21.09.47.10.tsv"
+    val filename = UniprotModel.retrieveRemoteDataFile()
     TestUniprotModel(UniprotModel).displayModels(filename)
 }
 
