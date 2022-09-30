@@ -2,6 +2,7 @@ package org.batteryparkdev.genomicgraphcore.app
 
 import com.google.common.base.Stopwatch
 import org.batteryparkdev.genomicgraphcore.common.CoreModelLoader
+import org.batteryparkdev.genomicgraphcore.common.service.Neo4jPropertiesService
 import org.batteryparkdev.genomicgraphcore.hgnc.HgncModel
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
 import org.batteryparkdev.genomicgraphcore.uniprot.model.UniprotModel
@@ -28,7 +29,8 @@ fun loadUniprotData() {
 }
 
 fun main() {
-   loadHgncData()
+    println("Loading data into Neo4j  ${Neo4jPropertiesService.neo4jDatabase} database")
+    loadHgncData()
     loadUniprotData()
     println("FINIS.....")
 
