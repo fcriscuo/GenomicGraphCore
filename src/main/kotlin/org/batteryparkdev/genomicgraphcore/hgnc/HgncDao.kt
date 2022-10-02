@@ -94,7 +94,7 @@ class HgncDao(private val hgncModel: HgncModel){
         to establish a HAS_HGNC relationship
          */
         fun registerChildRelationshipToHgnc( hgncId: String, relatedModel: CoreModel) {
-            val hgncNode = NodeIdentifier("Hgnc", "hgnc_id", hgncId)
+            val hgncNode = HgncModel.generateNodeIdentifierByValue(hgncId)
             NodeIdentifierDao.defineRelationship(
                 RelationshipDefinition(
                 relatedModel.getNodeIdentifier(), hgncNode, "HAS_HGNC"

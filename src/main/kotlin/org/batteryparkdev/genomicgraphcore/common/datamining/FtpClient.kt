@@ -23,35 +23,12 @@ const val FTP_PORT = 21
 
 private val logger = KotlinLogging.logger {}
 
-data class FtpClient(val server: String) {
+object FtpClient {
     private val ftp = FTPClient()
 
     init {
         ftp.addProtocolCommandListener(PrintCommandListener(PrintWriter(System.out)))
         ftp.enterLocalPassiveMode()
-    }
-
-    fun downloadRemoteFile(remoteFilePath: String, localFilePath: RefinedFilePath): Either<Exception, String> {
-        ftp.connect(server, FTP_PORT)
-        val replyCode = ftp.replyCode
-        if (FTPReply.isPositiveCompletion(replyCode)) {
-            ftp.login(FTP_USER, ftpPassword)
-            ftp.setFileType(FTP.ASCII_FILE_TYPE)
-            try {
-                val outputStream = FileOutputStream(localFilePath.getPath().toFile(),false)
-                ftp.retrieveFile(remoteFilePath,outputStream)
-                when (localFilePath.exists()){
-                    true -> return Either.Right("Remote file: $remoteFilePath has been downloaded to ${localFilePath.filePathName}")
-                    false -> return Either.Left(IOException("Download of remote file: $remoteFilePath to ${localFilePath.filePathName} failed"))
-                }
-            } catch (e: Exception) {
-                return Either.Left(e)
-            } finally {
-                ftp.logout()
-                ftp.disconnect()
-            }
-        }
-        return Either.Left(IOException("FTP server $server refused anonymous connection"))
     }
 
     /*

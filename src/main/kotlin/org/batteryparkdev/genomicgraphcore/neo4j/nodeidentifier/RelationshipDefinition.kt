@@ -33,6 +33,16 @@ data class RelationshipDefinition (
                 "${childNode.idValue.formatNeo4jPropertyValue()} " +
                 " MATCH  (parent) -[r:${relationshipType}] -> (child) " +
                 " DELETE r "
+
+    fun mapRelationshipDefinitionToCypher(): Pair<String,String> {
+        val cypher1 = parentNode.mapNodeIdentifierToCypherString()
+            .plus(" -[:$relationshipType] - ")
+            .plus(childNode.mapNodeIdentifierToCypherString())
+        val cypher2 =  childNode.mapNodeIdentifierToCypherString()
+            .plus(" -[:$relationshipType] - ")
+            .plus(parentNode.mapNodeIdentifierToCypherString())
+        return Pair(cypher1,cypher2)
+    }
 }
 
 data class RelationshipProperty(

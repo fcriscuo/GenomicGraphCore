@@ -2,6 +2,9 @@ package org.batteryparkdev.genomicgraphcore.hgnc
 
 import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.*
+import org.batteryparkdev.genomicgraphcore.common.datamining.FtpClient
+import org.batteryparkdev.genomicgraphcore.common.io.RefinedFilePath
+import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 
 
@@ -28,7 +31,9 @@ data class HgncModel(
     val maneSelect: String, val gencc: String
 ) : CoreModel {
 
-    override fun getNodeIdentifier(): NodeIdentifier = NodeIdentifier("Hgnc", "hgnc_id", hgncId)
+    override val idPropertyValue: String = this.hgncId
+
+    override fun getNodeIdentifier(): NodeIdentifier = generateNodeIdentifierByModel(HgncModel, this)
 
     override fun generateLoadModelCypher(): String = HgncDao(this).generateHgncCypher()
 
@@ -55,7 +60,14 @@ data class HgncModel(
 
     companion object : CoreModelCreator {
 
-        val nodename = "hgnc"   // used as a variable in Cypher statements for this entity
+        override val nodename = "hgnc"
+        override val nodelabel: String
+            get() = "Hgnc"
+        override val nodeIdProperty: String
+            get() = "hgnc_id"
+
+//        override fun generateNodeIdentifierByValue(idValue: String): NodeIdentifier =
+//            NodeIdentifier(nodelabel, nodeIdProperty, idValue)
 
         fun parseCsvRecord(record: CSVRecord): CoreModel = HgncModel(
             record.get("hgnc_id"), record.get("name"), record.get("symbol"),
@@ -89,6 +101,13 @@ data class HgncModel(
         )
 
         override val createCoreModelFunction: (CSVRecord) -> CoreModel = ::parseCsvRecord
+
+        fun retrieveRemoteDataFile(): String {
+            val ftpUrl = FilesPropertyService.hgncFtpUrl
+            val hgncFileName = FilesPropertyService.hgncLocalCompleteSetFilename
+            FtpClient.retrieveRemoteFileByFtpUrl(ftpUrl, RefinedFilePath(hgncFileName))
+            return hgncFileName
+        }
 
 
     }

@@ -13,6 +13,8 @@ interface CoreModel {
 
     abstract fun createModelRelationships()
 
+    abstract val idPropertyValue:String
+
     abstract fun isValid(): Boolean
 
     abstract fun getPubMedIds(): List<Int>
@@ -20,6 +22,9 @@ interface CoreModel {
     abstract fun getModelGeneSymbol(): String
 
     abstract fun getModelSampleId(): String   // support for alphanumeric sample identifiers
+
+    fun generateNodeIdentifierByModel(creator: CoreModelCreator, model: CoreModel): NodeIdentifier =
+        creator.generateNodeIdentifierByValue(model.idPropertyValue)
 
 
     /*
@@ -48,10 +53,16 @@ n.b. It's possible to establish >1 gene-mutation relationship in the same Cypher
                 " CALL apoc.merge.relationship( sample_mut_coll, '$relationship', " +
                 " {}, {}, $nodename) YIELD rel AS sample_mut_rel \n"
     }
+
 }
 
 interface CoreModelCreator {
     abstract val createCoreModelFunction: (CSVRecord) -> CoreModel
+    abstract val nodename: String
+    abstract val nodelabel: String
+    abstract val nodeIdProperty: String
+    fun generateNodeIdentifierByValue(idValue: String): NodeIdentifier =
+        NodeIdentifier(nodelabel, nodeIdProperty, idValue)
 }
 
 interface CoreModelDao{
