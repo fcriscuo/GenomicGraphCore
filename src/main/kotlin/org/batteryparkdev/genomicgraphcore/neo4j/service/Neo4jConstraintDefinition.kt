@@ -20,7 +20,7 @@ fun defineNeo4jConstraint(constraintName:String, nodeAbbreviation:String,
         .replace("NODE_LABEL", nodeLabel)
         .replace("NODE_PROPERTY", nodeProperty)
     Neo4jConnectionService.defineDatabaseConstraint(cypher)
-    LogService.logInfo("Constraint: $cypher  has been defined")
+    LogService.info("Constraint: $cypher  has been defined")
 }
 
 /*
@@ -31,14 +31,14 @@ fun defineConstraintsFromFile(filename:String) {
     try {
         defineConstraints(File(filename).readLines())
     } catch (e: Exception) {
-        LogService.logException(e)
+        LogService.exception(e)
     }
 }
 
 fun defineConstraints(constraints: List<String>) {
     constraints.forEach {
         Neo4jConnectionService.defineDatabaseConstraint(it)
-        LogService.logInfo("Constraint: $it  has been defined")
+        LogService.info("Constraint: $it  has been defined")
     }
 }
 

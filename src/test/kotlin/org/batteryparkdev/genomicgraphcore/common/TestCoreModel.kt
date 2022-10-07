@@ -10,6 +10,7 @@ import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.CoreModel
 import org.batteryparkdev.genomicgraphcore.common.CoreModelCreator
 import org.batteryparkdev.genomicgraphcore.common.io.CSVRecordSupplier
+import org.batteryparkdev.genomicgraphcore.common.io.CsvRecordSequenceSupplier
 import org.batteryparkdev.genomicgraphcore.hgnc.HgncModel
 import java.nio.file.Paths
 import kotlin.streams.asSequence
@@ -21,8 +22,9 @@ class TestCoreModel (val creator: CoreModelCreator)  {
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun CoroutineScope.produceCSVRecords(filename: String) =
         produce<CSVRecord> {
-            val path = Paths.get(filename)
-            CSVRecordSupplier(path).get().limit(LIMIT).asSequence()
+//            val path = Paths.get(filename)
+//            CSVRecordSupplier(path).get().limit(LIMIT).asSequence()
+            CsvRecordSequenceSupplier(filename).get()
                 .filter { it.size() > 1 }
                 .forEach {
                     send(it)
@@ -46,7 +48,7 @@ class TestCoreModel (val creator: CoreModelCreator)  {
         val models = generateModels(produceCSVRecords(filename))
         for (model in models) {
             nodeCount += 1
-            if (nodeCount % 50 == 0 ) {
+            if (nodeCount % 10 == 0 ) {
                 println(model.generateLoadModelCypher())
             }
         }

@@ -22,13 +22,14 @@ object NodeIdentifierDao {
     Public function to merge two(2) nodes and a specified relationship
     between them
      */
+
     fun defineRelationship(relDefinition: RelationshipDefinition) =
         when (relDefinition.isValid()) {
             true -> {
                 Neo4jConnectionService.executeCypherCommand(relDefinition.generateRelationshipCypher())
             }
             false -> {
-                LogService.logError("ERROR: RelationshipDefinition is invalid: $relDefinition")
+                LogService.error("ERROR: RelationshipDefinition is invalid: $relDefinition")
             }
         }
 
@@ -42,12 +43,12 @@ object NodeIdentifierDao {
                 .and( relDefinition.relationshipType.isNotBlank())
         ) {
             Neo4jConnectionService.executeCypherCommand(relDefinition.deleteRelationshipDefinitionCypher())
-            LogService.logInfo(
+            LogService.info(
                 "Deleted ${relDefinition.relationshipType} relationship between parent " +
                         "\${relDefinition.parentNode}  and child ${relDefinition.childNode}"
             )
         } else {
-            LogService.logWarn(
+            LogService.warn(
                 "Invalid input parent: $relDefinition"
             )
         }

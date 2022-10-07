@@ -6,8 +6,8 @@ import java.nio.file.Paths
  Test using a small sample file
   */
 fun main() {
-    val path = Paths.get("./data/classification.csv")
-    println("Processing csv file ${path.fileName}")
-    CsvRecordSequenceSupplier(path).get().asSequence().drop(6879)
+    val filename ="./data/sample-uniprot.tsv"
+    println("Processing csv file $filename")
+    CsvRecordSequenceSupplier(filename).get().drop(100)
         .forEach {record -> println(record.get(0)) }
 }

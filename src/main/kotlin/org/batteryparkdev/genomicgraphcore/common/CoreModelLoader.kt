@@ -4,12 +4,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import org.apache.commons.csv.CSVRecord
-import org.batteryparkdev.genomicgraphcore.common.io.CSVRecordSupplier
+import org.batteryparkdev.genomicgraphcore.common.io.CsvRecordSequenceSupplier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
-import org.batteryparkdev.genomicgraphcore.neo4j.service.CypherLoadChannel.processCypher
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
-import java.nio.file.Paths
-import kotlin.streams.asSequence
 
 /*
 Represents a class that will read a delimited file (e.g. csv, tsv), parse the individual records into
@@ -25,9 +22,7 @@ class CoreModelLoader(val creator: CoreModelCreator) {
     @OptIn(ExperimentalCoroutinesApi::class)
    private fun CoroutineScope.produceCSVRecords(filename: String, dropCount:Int  = 0) =
         produce<CSVRecord> {
-            val path = Paths.get(filename)
-            CSVRecordSupplier(path).get()
-                .asSequence()
+            CsvRecordSequenceSupplier(filename).get()
                 .drop(dropCount)
                 .filter { it.size()> 0 }
                 .forEach {
@@ -69,20 +64,6 @@ class CoreModelLoader(val creator: CoreModelCreator) {
         }
 
     /*
-    Complete custom relationships for this CoreModel
-    */
-//     @OptIn(ExperimentalCoroutinesApi::class)
-//   private fun CoroutineScope.processRelationships(models: ReceiveChannel<CoreModel>)=
-//        produce<NodeIdentifier> {
-//            for (model in models){
-//                delay(1_000)
-//                model.createModelRelationships()
-//                send(model.getNodeIdentifier())
-//                delay(20)
-//            }
-//        }
-
-    /*
     Public method to process the specified delimited file
     // dropCount represents the number of file rows that ere loaded by a previous execution
      */
@@ -91,10 +72,6 @@ class CoreModelLoader(val creator: CoreModelCreator) {
         while(identifiers.iterator().hasNext()){
             nodeCount+= 1
         }
-//        for (identifier in identifiers) {
-//           nodeCount += 1
-//            println(identifier)
-//        }
         println("Loaded record count for ${creator::class.java.name }= $nodeCount")
     }
 }

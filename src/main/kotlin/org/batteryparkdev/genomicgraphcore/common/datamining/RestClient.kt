@@ -15,9 +15,11 @@ import java.net.URL
 
 /**
  * Copied over from legacy project 2022Jul26
+ * n.b. The ktor Apache client library breaks with release >= 1.7.0
  */
 
 data class HttpClientException(val response: HttpResponse) : IOException("HTTP Error ${response.status}")
+
 
 fun loadFileFromUrl(fileName: String, url: String): Int {
     var lineCount = 0
@@ -25,10 +27,10 @@ fun loadFileFromUrl(fileName: String, url: String): Int {
         val client = HttpClient(Apache) {
             followRedirects = true
         }
+
         client.getAsFile(fileName, url) { file ->
             lineCount = file.readLines().size
-            LogService.logInfo("File at ${file.absolutePath} line count = $lineCount" )
-
+           LogService.info("File at ${file.absolutePath} line count = $lineCount")
         }
     }
     return lineCount

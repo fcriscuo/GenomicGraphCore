@@ -67,8 +67,8 @@ object Neo4jConnectionService {
                     }
                 }
             } catch (e: Exception) {
-                LogService.logException(e)
-                LogService.logError("Cypher query: $query")
+                LogService.exception(e)
+                LogService.error("Cypher query: $query")
             }
             return retList.toList()
         }
@@ -90,8 +90,8 @@ object Neo4jConnectionService {
                     tx.run(command)
                 }!!
             } catch (e: Exception) {
-                LogService.logException(e)
-                LogService.logError("Cypher command: $command")
+                LogService.exception(e)
+                LogService.error("Cypher command: $command")
             }
         }
     }
@@ -113,8 +113,8 @@ object Neo4jConnectionService {
                 }!!
                 return resultString.toString()
             } catch (e: Exception) {
-                LogService.logException(e)
-                LogService.logError("Cypher command: $command")
+                LogService.exception(e)
+                LogService.error("Cypher command: $command")
             }
         }
         return ""
