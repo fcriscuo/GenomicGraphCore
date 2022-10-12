@@ -67,7 +67,7 @@ author: Marcin Moskała
     Utility method to add a secondary label to an existing node if the
     new label is novel
      */
-    private fun addLabelToNode(node: NodeIdentifier) {
+     fun addLabelToNode(node: NodeIdentifier) {
         if (node.isValid().and(node.secondaryLabel.isNotBlank())){
             val cypher = "MATCH (child:${node.primaryLabel}{${node.idProperty}:" +
                     " ${node.idValue.formatNeo4jPropertyValue()} }) " +
