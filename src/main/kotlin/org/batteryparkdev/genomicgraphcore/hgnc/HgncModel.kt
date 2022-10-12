@@ -1,12 +1,13 @@
 package org.batteryparkdev.genomicgraphcore.hgnc
 
 import org.apache.commons.csv.CSVRecord
-import org.batteryparkdev.genomicgraphcore.common.*
+import org.batteryparkdev.genomicgraphcore.common.CoreModel
+import org.batteryparkdev.genomicgraphcore.common.CoreModelCreator
 import org.batteryparkdev.genomicgraphcore.common.datamining.FtpClient
-import org.batteryparkdev.genomicgraphcore.common.io.RefinedFilePath
+import org.batteryparkdev.genomicgraphcore.common.parseOnPipe
+import org.batteryparkdev.genomicgraphcore.common.parseValidInteger
 import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
-
 
 /*
 Represents the data used to define an HGNC node in the Neo4j database
@@ -105,7 +106,7 @@ data class HgncModel(
         fun retrieveRemoteDataFile(): String {
             val ftpUrl = FilesPropertyService.hgncFtpUrl
             val hgncFileName = FilesPropertyService.hgncLocalCompleteSetFilename
-            FtpClient.retrieveRemoteFileByFtpUrl(ftpUrl, RefinedFilePath(hgncFileName))
+            FtpClient.retrieveRemoteFileByFtpUrl(ftpUrl, hgncFileName)
             return hgncFileName
         }
 

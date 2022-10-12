@@ -28,7 +28,8 @@
         <kotlintest.version>1.7.10</kotlintest.version>
         <mockk.version>1.12.0</mockk.version>
         <arrow-kt.version>1.1.2</arrow-kt.version>
-        <ktor.version>2.1.1</ktor.version>
+        <!--ktor Apache client library breaks in release 1.7  -->
+        <ktor.version>1.6.8</ktor.version>
         <maven.compiler.source>18</maven.compiler.source>
         <maven.compiler.target>18</maven.compiler.target>
     </properties>
@@ -113,6 +114,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.1</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.flogger</groupId>
             <artifactId>flogger</artifactId>
             <version>0.7.4</version>
@@ -129,12 +135,6 @@
             <artifactId>kotlin-logging-jvm</artifactId>
             <version>3.0.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>ch.qos.logback</groupId>-->
-<!--            <artifactId>logback-classic</artifactId>-->
-<!--            <version>1.2.10</version>-->
-<!--        </dependency>-->
-
         <!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
         <dependency>
             <groupId>commons-net</groupId>
@@ -158,22 +158,16 @@
             <version>${ktor.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.ktor/ktor-client -->
-        <dependency>
-            <groupId>io.ktor</groupId>
-            <artifactId>ktor-client</artifactId>
-            <version>${ktor.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>io.ktor</groupId>-->
+<!--            <artifactId>ktor-client</artifactId>-->
+<!--            <version>${ktor.version}</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>io.github.cdimascio</groupId>
             <artifactId>dotenv-kotlin</artifactId>
             <version>6.3.1</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.slf4j</groupId>-->
-<!--            <artifactId>slf4j-api</artifactId>-->
-<!--            <version>1.7.32</version>-->
-<!--        </dependency>-->
-
         <!-- https://mvnrepository.com/artifact/io.arrow-kt/arrow-core -->
         <dependency>
             <groupId>io.arrow-kt</groupId>
@@ -187,8 +181,6 @@
             <artifactId>arrow-core-jvm</artifactId>
             <version>1.1.2</version>
         </dependency>
-
-
         <!-- https://mvnrepository.com/artifact/io.arrow-kt/arrow-annotations -->
         <dependency>
             <groupId>io.arrow-kt</groupId>

@@ -4,6 +4,7 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.service.LogService
+import org.batteryparkdev.genomicgraphcore.common.service.log
 import java.io.FileReader
 import java.io.IOException
 import java.nio.charset.Charset
@@ -28,7 +29,7 @@ class TsvRecordSequenceSupplier : Supplier<Sequence<CSVRecord>> {
                 recordSequence = parser.records.asSequence()
             }
         } catch (e: IOException) {
-            LogService.logException(e)
+            e.log()
         }
     }
 

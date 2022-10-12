@@ -1,9 +1,10 @@
 package org.batteryparkdev.genomicgraphcore.uniprot.model
 
 import org.apache.commons.csv.CSVRecord
-import org.batteryparkdev.genomicgraphcore.common.*
+import org.batteryparkdev.genomicgraphcore.common.CoreModel
+import org.batteryparkdev.genomicgraphcore.common.CoreModelCreator
 import org.batteryparkdev.genomicgraphcore.common.datamining.FtpClient
-import org.batteryparkdev.genomicgraphcore.common.io.RefinedFilePath
+import org.batteryparkdev.genomicgraphcore.common.parseOnSemicolon
 import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.uniprot.dao.UniprotModelDao
@@ -66,7 +67,7 @@ data class UniprotModel(
         fun retrieveRemoteDataFile(): String {
             val restUrl = FilesPropertyService.uniprotRestUrl
             val uniprotFileName = FilesPropertyService.uniprotLocalFilename
-            FtpClient.retrieveRemoteFileByFtpUrl(restUrl, RefinedFilePath(uniprotFileName))
+            FtpClient.retrieveRemoteFileByFtpUrl(restUrl, uniprotFileName)
             return uniprotFileName
         }
     }

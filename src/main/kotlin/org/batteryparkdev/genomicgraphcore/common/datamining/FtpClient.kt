@@ -1,18 +1,16 @@
 package org.batteryparkdev.genomicgraphcore.common.datamining
 
 import arrow.core.Either
+import arrow.core.handleError
 import mu.KotlinLogging
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FilenameUtils
 import org.apache.commons.net.PrintCommandListener
-import org.apache.commons.net.ftp.FTP
 import org.apache.commons.net.ftp.FTPClient
-import org.apache.commons.net.ftp.FTPReply
 import org.batteryparkdev.genomicgraphcore.common.io.FileFunctions
-import org.batteryparkdev.genomicgraphcore.common.io.RefinedFilePath
+import org.batteryparkdev.genomicgraphcore.common.io.ValidatedWriteFilePath
 import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.File
 import java.io.PrintWriter
 import java.net.URL
 
@@ -38,18 +36,27 @@ Parameters: ftpUrl - Complete URL for remote file
             localFilePath - local filesystem location
 Returns: An Either - Left is an Exception, Right is a success message
  */
-    fun retrieveRemoteFileByFtpUrl(ftpUrl: String, localFilePath: RefinedFilePath): Either<Exception, String> {
-        val urlConnection = URL(ftpUrl)
-        urlConnection.openConnection()
-        // the FileUtils method closes the input stream
-        try {
-            FileUtils.copyInputStreamToFile(urlConnection.openStream(), localFilePath.getPath().toFile())
-            if (FilenameUtils.getExtension(localFilePath.filePathName) in FileFunctions.compressedFileExtensions) {
-                FileFunctions.gunzipFile(localFilePath.filePathName)
+    fun retrieveRemoteFileByFtpUrl(ftpUrl: String, localFilePath: String): Either<Exception, String> {
+        val validatedWritePath = ValidatedWriteFilePath.valueOf(localFilePath)
+        if (validatedWritePath.isValid) {
+            val urlConnection = URL(ftpUrl)
+            urlConnection.openConnection()
+            // the FileUtils method closes the input stream
+            return try {
+                FileUtils.copyInputStreamToFile(urlConnection.openStream(),File(localFilePath))
+                if (FilenameUtils.getExtension(localFilePath) in FileFunctions.compressedFileExtensions) {
+                    FileFunctions.gunzipFile(localFilePath)
+                }
+                Either.Right("$ftpUrl downloaded to  $localFilePath")
+            } catch (e: Exception) {
+                Either.Left(e)
             }
-            return Either.Right("$ftpUrl downloaded to  $localFilePath")
-        } catch (e: Exception) {
-            return Either.Left(e)
+        } else {
+            val exceptionMessage = "Write File Errors: "
+            validatedWritePath.mapLeft { errors -> errors.map { it.message.plus("\n") } }
+                .handleError { errors -> errors.fold(exceptionMessage){acc, error -> acc.plus(error) } }
+            return Either.Left(Exception(exceptionMessage))
+
         }
     }
 }

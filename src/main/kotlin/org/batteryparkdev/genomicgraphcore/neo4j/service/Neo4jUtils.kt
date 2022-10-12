@@ -29,7 +29,7 @@ author: Marcin Moskała
         val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
         while (true) {
             val randomString = (1..length)
-                .map { i -> random.nextInt(charPool.size) }
+                .map { _ -> random.nextInt(charPool.size) }
                 .map(charPool::get)
                 .joinToString("");
             yield(randomString)
@@ -67,7 +67,7 @@ author: Marcin Moskała
     Utility method to add a secondary label to an existing node if the
     new label is novel
      */
-    private fun addLabelToNode(node: NodeIdentifier) {
+     fun addLabelToNode(node: NodeIdentifier) {
         if (node.isValid().and(node.secondaryLabel.isNotBlank())){
             val cypher = "MATCH (child:${node.primaryLabel}{${node.idProperty}:" +
                     " ${node.idValue.formatNeo4jPropertyValue()} }) " +
@@ -90,10 +90,10 @@ author: Marcin Moskała
             .replace("LABEL", label)
         val countLabelCommand = countLabelTemplate.replace("LABEL", label)
         val beforeCount = Neo4jConnectionService.executeCypherCommand(countLabelCommand)
-        LogService.logInfo("Node type: $nodeName, removing label: $label before count = $beforeCount")
+        LogService.info("Node type: $nodeName, removing label: $label before count = $beforeCount")
         Neo4jConnectionService.executeCypherCommand(removeLabelCommand)
         val afterCount = Neo4jConnectionService.executeCypherCommand(countLabelCommand)
-        LogService.logInfo("Node type: $nodeName, after label removal command count = $afterCount")
+        LogService.info("Node type: $nodeName, after label removal command count = $afterCount")
     }
 
     /*******
@@ -143,7 +143,7 @@ author: Marcin Moskała
                     "false" -> return false
                 }
             } catch (e: Exception) {
-                LogService.logException(e)
+                LogService.exception(e)
                 return false
             }
         }
@@ -174,11 +174,11 @@ Utility function to determine if a specified node is in the database
                 return try {
                     Neo4jConnectionService.executeCypherCommand(cypher).toBoolean()
                 } catch (e: Exception) {
-                    LogService.logException(e)
+                    LogService.exception(e)
                     return false
                 }
             }
-            false -> LogService.logWarn("Invalid NodeIdentifier: $nodeId")
+            false -> LogService.warn("Invalid NodeIdentifier: $nodeId")
         }
         return false
     }
@@ -220,6 +220,6 @@ Utility function to determine if a specified node is in the database
         Neo4jConnectionService.executeCypherCommand(
             "MATCH () -[r:$relType]-() DELETE r;"
         )
-        LogService.logInfo("Deleted all occurrences of relationship type: $relType")
+        LogService.info("Deleted all occurrences of relationship type: $relType")
     }
 }
