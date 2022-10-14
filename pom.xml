@@ -20,12 +20,12 @@
         <apache.log4j.version>1.2.17</apache.log4j.version>
         <apache.csv.version>1.9.0</apache.csv.version>
         <guava.version>31.1-jre</guava.version>
-        <scala_version>2.12.13</scala_version>
+        <scala_version>2.13.8</scala_version>
         <neo4j.version>4.4.10</neo4j.version>
         <neo4j.driver.version>5.0.0</neo4j.driver.version>
         <cfg4j.version>4.4.1</cfg4j.version>
-        <kotlin.version>1.7.10</kotlin.version>
-        <kotlintest.version>1.7.10</kotlintest.version>
+        <kotlin.version>1.7.20</kotlin.version>
+        <kotlintest.version>1.7.20</kotlintest.version>
         <mockk.version>1.12.0</mockk.version>
         <arrow-kt.version>1.1.2</arrow-kt.version>
         <!--ktor Apache client library breaks in release 1.7  -->
@@ -71,6 +71,13 @@
     </pluginRepositories>
 
     <dependencies>
+        <dependency>
+            <groupId>ai.wisecube</groupId>
+            <artifactId>pubmed</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/pubmed-parser.jar</systemPath>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -116,7 +123,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.1</version>
+            <version>1.4.3</version>
         </dependency>
         <dependency>
             <groupId>com.google.flogger</groupId>
@@ -322,7 +329,7 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-reflect</artifactId>
-            <version>1.7.10</version>
+            <version>1.7.20</version>
             <scope>runtime</scope>
         </dependency>
 

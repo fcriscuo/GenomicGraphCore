@@ -6,6 +6,7 @@ import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.model.PubMedModel
 
 const val pubNodeName = "publication"
+
 fun pubmedNodeExistsPredicate(pubId: String): Boolean =
     publicationNodeExistsPredicate(
         NodeIdentifier(
