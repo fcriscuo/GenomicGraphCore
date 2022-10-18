@@ -53,7 +53,6 @@ n.b. It's possible to establish >1 gene-mutation relationship in the same Cypher
                 " CALL apoc.merge.relationship( sample_mut_coll, '$relationship', " +
                 " {}, {}, $nodename) YIELD rel AS sample_mut_rel \n"
     }
-
 }
 
 interface CoreModelCreator {

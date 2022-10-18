@@ -16,7 +16,7 @@ import java.net.URL
 import java.nio.charset.Charset
 import javax.xml.parsers.DocumentBuilderFactory
 
-object PubMedRetrievalService {
+object PubmedRetrievalService {
 
     private val ncbiEmail = System.getenv("NCBI_EMAIL")
     private val ncbiApiKey = System.getenv("NCBI_API_KEY")

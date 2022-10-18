@@ -29,6 +29,7 @@
         <mockk.version>1.12.0</mockk.version>
         <arrow-kt.version>1.1.2</arrow-kt.version>
         <!--ktor Apache client library breaks in release 1.7  -->
+        <!-- Don't upgrade this library               -->
         <ktor.version>1.6.8</ktor.version>
         <maven.compiler.source>18</maven.compiler.source>
         <maven.compiler.target>18</maven.compiler.target>
@@ -71,6 +72,17 @@
     </pluginRepositories>
 
     <dependencies>
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>4.0.0</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sun.xml.bind</groupId>
+                <artifactId>jaxb-impl</artifactId>
+                <version>4.0.0</version>
+                <scope>runtime</scope>
+            </dependency>
         <dependency>
             <groupId>ai.wisecube</groupId>
             <artifactId>pubmed</artifactId>
@@ -85,15 +97,6 @@
             <version>${apache.commons.config.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.github.microutils/kotlin-logging -->
-
-        <!--local dependency for Neo4j services -->
-<!--        <dependency>-->
-<!--            <groupId>org.batteryparkdev</groupId>-->
-<!--            <artifactId>Neo4jService</artifactId>-->
-<!--            <version>1.0-SNAPSHOT</version>-->
-<!--            <scope>system</scope>-->
-<!--            <systemPath>${project.basedir}/lib/Neo4jService-1.0-SNAPSHOT.jar</systemPath>-->
-<!--        </dependency>-->
         <!-- Neo4j front end requires scala 2.12.13-->
         <!-- https://mvnrepository.com/artifact/org.scala-lang/scala-library -->
         <dependency>
@@ -101,41 +104,41 @@
             <artifactId>scala-library</artifactId>
             <version>2.13.8</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.flogger</groupId>
-            <artifactId>flogger-log4j-backend</artifactId>
-            <version>0.7.4</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.sun.jmx</groupId>
-                    <artifactId>jmxri</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jdmk</groupId>
-                    <artifactId>jmxtools</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.jms</groupId>
-                    <artifactId>jms</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.google.flogger</groupId>-->
+<!--            <artifactId>flogger-log4j-backend</artifactId>-->
+<!--            <version>0.7.4</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.sun.jmx</groupId>-->
+<!--                    <artifactId>jmxri</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.sun.jdmk</groupId>-->
+<!--                    <artifactId>jmxtools</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>javax.jms</groupId>-->
+<!--                    <artifactId>jms</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.4.3</version>
         </dependency>
-        <dependency>
-            <groupId>com.google.flogger</groupId>
-            <artifactId>flogger</artifactId>
-            <version>0.7.4</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.flogger/flogger-system-backend -->
-        <dependency>
-            <groupId>com.google.flogger</groupId>
-            <artifactId>flogger-system-backend</artifactId>
-            <version>0.7.4</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.google.flogger</groupId>-->
+<!--            <artifactId>flogger</artifactId>-->
+<!--            <version>0.7.4</version>-->
+<!--        </dependency>-->
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/com.google.flogger/flogger-system-backend &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.google.flogger</groupId>-->
+<!--            <artifactId>flogger-system-backend</artifactId>-->
+<!--            <version>0.7.4</version>-->
+<!--        </dependency>-->
         <!-- https://mvnrepository.com/artifact/io.github.microutils/kotlin-logging -->
         <dependency>
             <groupId>io.github.microutils</groupId>
@@ -264,31 +267,26 @@
             <artifactId>apache-log4j-extras</artifactId>
             <version>1.2.17</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-graphdb-api</artifactId>
             <version>${neo4j.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j</artifactId>
             <version>${neo4j.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.neo4j</groupId>
             <artifactId>neo4j-ogm-core</artifactId>
             <version>3.2.37</version>
         </dependency>
-
         <!-- Only add if you're using the Bolt driver -->
         <dependency>
             <groupId>org.neo4j</groupId>
