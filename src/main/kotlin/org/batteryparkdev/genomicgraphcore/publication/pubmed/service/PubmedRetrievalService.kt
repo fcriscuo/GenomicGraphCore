@@ -24,6 +24,7 @@ object PubmedRetrievalService {
     private val dBuilder = dbFactory.newDocumentBuilder()
     const val ncbiDelay: Long = 100L   // 333 milliseconds w/o registered account
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun generateEutilsURLByType(type: String, pubmedId: String):String {
        val template = when(type.lowercase()) {
            "pubmed" -> "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&amp;id=PUBMEDID&amp;retmode=xml" +

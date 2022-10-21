@@ -36,6 +36,7 @@ fun String.parseToNeo4jStringList(sep: Char = '|'): String {
     return "[]"
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 fun String.predicateToBoolean():Boolean =
     when (this.lowercase(Locale.getDefault())) {
         "true" ->  true
@@ -78,6 +79,7 @@ processing errors
 */
 fun String.removeInternalQuotes(): String = this.replace("\"", "'")
 
+@OptIn(ExperimentalStdlibApi::class)
 fun String.YNtoBoolean(): Boolean = this.lowercase() == "y"
 
 fun String.isNumeric(): Boolean = this.all { it in '0'..'9' }

@@ -8,6 +8,7 @@ import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.batteryparkdev.genomicgraphcore.common.CoreModel
+import org.batteryparkdev.genomicgraphcore.common.service.Neo4jPropertiesService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import org.batteryparkdev.genomicgraphcore.publication.getAllPlaceholderPubMedNodeIds
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.model.PubmedModel
@@ -88,8 +89,12 @@ class PubMedModelLoader() {
             }
         }
     }
-
 }
+
 fun main() {
+    println("Loading data into the Neo4j ${Neo4jPropertiesService.neo4jDatabase} database")
+    println("There will be a 20 second delay. If this is not the intended database, hit CTRL-C to terminate")
+    Thread.sleep(20_000L)
+    println("Proceeding....")
     PubMedModelLoader().loadPublicationNodes()
 }

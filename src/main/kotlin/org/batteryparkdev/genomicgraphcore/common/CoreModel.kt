@@ -33,7 +33,8 @@ GeneMutationCollection - [HAS_MUTATION] -> specific Mutation relationship
 n.b. It's possible to establish >1 gene-mutation relationship in the same Cypher transaction,
  so the relationship name must be unique
 */
-    fun generateGeneMutationCollectionRelationshipCypher( nodename: String): String {
+    @OptIn(ExperimentalStdlibApi::class)
+    fun generateGeneMutationCollectionRelationshipCypher(nodename: String): String {
         val relationship = "HAS_".plus(nodename.uppercase())
         val suffix = RandomStringUtils.randomAlphanumeric(6).lowercase()
         val gene_rel_name = "gene_mut_rel_".plus(suffix)
@@ -45,7 +46,8 @@ n.b. It's possible to establish >1 gene-mutation relationship in the same Cypher
                 " {}, {}, $nodename) YIELD rel AS $gene_rel_name \n"
     }
 
-    fun generateSampleMutationCollectionRelationshipCypher( nodename: String): String {
+    @OptIn(ExperimentalStdlibApi::class)
+    fun generateSampleMutationCollectionRelationshipCypher(nodename: String): String {
         val relationship = "HAS_".plus(nodename.uppercase())
         return "CALL apoc.merge.node([\"SampleMutationCollection\"], " +
                 " {sample_id: ${getModelSampleId()}}, " +
