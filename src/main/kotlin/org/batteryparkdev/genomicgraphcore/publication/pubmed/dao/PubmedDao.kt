@@ -3,6 +3,7 @@ package org.batteryparkdev.genomicgraphcore.publication.pubmed.dao
 import org.batteryparkdev.genomicgraphcore.common.*
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
+import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.model.PubmedModel
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.model.PubmedReference
@@ -36,10 +37,34 @@ class PubmedDao(private val model: PubmedModel) {
                 "{ ${mapPubMedProperties()}, last_mod: datetime()} ) YIELD node AS $nodename \n"
 
     companion object : CoreModelDao {
-        // currently relationships to PubMed nodes are handled by their child nodes
-        // e.g. Hgnc, Reference
-        fun completeRelationships(model: CoreModel): Unit {
+        // Create a Section node for the publication's abstract
+        private fun completeRelationships(model: CoreModel): Unit {
+            if (model is PubmedModel && model.abstract.isNotEmpty()){
+                val sectionId = mergePublicationSection(model)
+                Neo4jConnectionService.executeCypherCommand(
+                    "MATCH (p:Publication), (s:PublicationSection) " +
+                            " WHERE p.pub_id = ${model.pubmedId}D AND s.section_id = $sectionId " +
+                            " CREATE (p) -[r:HAS_SECTION {type: \"Abstract\"} ]-> (s)"
+                )
+            }
         }
+        /*
+          Private function to create a PublicationSection node and a relationship to the
+          Publication node
+           */
+        private fun mergePublicationSection(model: PubmedModel): String {
+            val pubId = model.pubmedId.toString()
+            return Neo4jConnectionService.executeCypherCommand(
+                "MERGE (s:PublicationSection{ section_id: ${getPublicationSectionId(pubId)}}) " +
+                        "SET s.text = ${model.abstract.formatNeo4jPropertyValue()} RETURN s.section_id"
+            )
+        }
+
+        private fun getPublicationSectionId(pubId: String) =
+            pubId.plus("-").plus(Neo4jConnectionService.executeCypherCommand(
+            "MATCH (p:Publication{p: ${pubId} }) -- " +
+                    "(PublicationSection) RETURN COUNT(PublicationSection.section_id) +1"))
+
 
         override val modelRelationshipFunctions: (CoreModel) -> Unit = ::completeRelationships
     }
@@ -68,9 +93,12 @@ class ReferenceDao(private val model: PubmedReference) {
     private fun generateMergeCypher(): String =
         "CALL apoc.merge.node(['Publication','Reference'], " +
                 "{ pub_id: ${model.referencePubmedId}}," +
-                "{ journal: ${model.journal.formatNeo4jPropertyValue()}, " +
-                "  date: ${model.date.formatNeo4jPropertyValue()}," +
-                " issue: ${model.issue.formatNeo4jPropertyValue()}," +
+                "{ citation: ${model.citation.citation.formatNeo4jPropertyValue()}, " +
+                "  issue: ${model.citation.issue.formatNeo4jPropertyValue()}," +
+                when (model.citation.doiUrl.isNotEmpty()){
+                    true -> " doi_url: ${model.citation.doiUrl.formatNeo4jPropertyValue()}, "
+                    false -> " "
+                } +
                 " created: datetime()}, {last_mod: datetime()} ) YIELD node AS $nodename "
                     .plus(" RETURN  $nodename \n")
 

@@ -205,8 +205,42 @@ data class PubmedModel(
     }
 }
 
-data class PubmedReference(val referencePubmedId: Int, val journal: String,
-                           val date: String, val issue: String, val parentId: Int): CoreModel {
+data class ReferenceCitation(val citation: String, val issue: String, val doiUrl: String ="") {
+
+    fun isValid()  = citation.isNotEmpty()
+
+    companion object{
+        // There are two (2) citation formats (i.e. short and long
+        fun parseCitationFromReference( reference: Reference) =
+            when(reference.citation.contains(';')) {
+                true -> processShortCitation(reference)
+                false -> processLongCitation(reference)
+            }
+
+        private fun processLongCitation(reference: Reference): ReferenceCitation {
+            var citation = ""
+            var issue = ""
+            var url = ""
+            reference.citation.split(" ").forEach {
+                word -> when {
+                    word.startsWith("https") -> url = word
+                    (word[0].isDigit()) -> issue = word
+                    else -> citation += word.plus(" ")
+                }
+            }
+            //TODO: Remove println after debugging
+            println("Citation: $citation  issue: $issue   url: $url")
+            return ReferenceCitation(citation ,issue, url)
+        }
+
+        private fun processShortCitation(reference: Reference): ReferenceCitation =
+            ReferenceCitation( reference.citation.substringBefore(';'),
+                reference.citation.substringAfter(';'))
+    }
+}
+
+data class PubmedReference(val referencePubmedId: Int, val citation: ReferenceCitation,
+                           val parentId: Int): CoreModel {
 
     companion object: CoreModelCreator {
         const val PubmedIdType = "pubmed"
@@ -219,30 +253,10 @@ data class PubmedReference(val referencePubmedId: Int, val journal: String,
             }
         }
 
-        private fun resolveJournalFromCitation(citation: String) =
-                when (citation.contains('.')) {
-                    true -> citation.substring(0, citation.indexOf('.'))
-                    false -> ""
-                }
-
-        private fun resolveDateFromCitation(citation: String) =
-            when(citation.contains('.').and(citation.contains(';'))){
-                true -> citation.substring(citation.indexOf('.')+1, citation.indexOf(';')).trim()
-                false ->""
-            }
-
-        private fun resolveIssueFromCitation(citation: String) =
-            when (citation.contains(';')) {
-                true -> citation.substring(citation.indexOf(';')+1)
-                false -> ""
-            }
-
         fun  parsePubMedReference(reference: Reference,parentId: Int) =
             PubmedReference(
                 if (reference.articleIdList != null ) resolvePubMedReferenceId(reference.articleIdList) else 0,
-                resolveJournalFromCitation( reference.citation),
-                resolveDateFromCitation(reference.citation),
-                resolveIssueFromCitation(reference.citation),
+                ReferenceCitation.parseCitationFromReference(reference),
                 parentId  // allows each Reference node to be persisted independently of the PubMed node
             )
 
@@ -269,8 +283,7 @@ data class PubmedReference(val referencePubmedId: Int, val journal: String,
         get() = referencePubmedId.toString()
 
     override fun isValid(): Boolean  = (referencePubmedId> 0)
-        .and(journal.isNotEmpty())
-        .and(issue.isNotEmpty())
+        .and(citation.isValid())
 
     override fun getPubMedIds(): List<Int> = listOf(referencePubmedId)
 

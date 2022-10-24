@@ -20,7 +20,7 @@ class PubMedModelLoader() {
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun CoroutineScope.generatePublicationBatch() =
         produce<Set<String>> {
-            getAllPlaceholderPubMedNodeIds().chunked(50).asIterable().forEach {
+            getAllPlaceholderPubMedNodeIds().chunked(60).asIterable().forEach {
                 send(it.toSet())
                 delay(20L)
             }
@@ -94,7 +94,7 @@ class PubMedModelLoader() {
 fun main() {
     println("Loading data into the Neo4j ${Neo4jPropertiesService.neo4jDatabase} database")
     println("There will be a 20 second delay. If this is not the intended database, hit CTRL-C to terminate")
-    Thread.sleep(20_000L)
+   // Thread.sleep(20_000L)
     println("Proceeding....")
     PubMedModelLoader().loadPublicationNodes()
 }
