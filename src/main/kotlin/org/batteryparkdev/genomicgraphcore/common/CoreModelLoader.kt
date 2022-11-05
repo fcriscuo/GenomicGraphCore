@@ -7,6 +7,9 @@ import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.io.CsvRecordSequenceSupplier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /*
 Represents a class that will read a delimited file (e.g. csv, tsv), parse the individual records into
@@ -68,10 +71,27 @@ class CoreModelLoader(val creator: CoreModelCreator) {
     // dropCount represents the number of file rows that ere loaded by a previous execution
      */
     fun loadDataFile(filename: String, dropCount: Int = 0) = runBlocking {
+        require(filename.isNotEmpty()){"A filename is required"}
        val identifiers = loadModels(generateModels(produceCSVRecords(filename, dropCount)))
         while(identifiers.iterator().hasNext()){
             nodeCount+= 1
         }
         println("Loaded record count for ${creator::class.java.name }= $nodeCount")
+        deleteDataFile(filename)
+    }
+
+    private fun deleteDataFile(filename: String){
+        val path = Paths.get(filename)
+        try {
+            val result = Files.deleteIfExists(path)
+            if (result) {
+                println("Deletion of $filename succeeded.")
+            } else {
+                println("Deletion of $filename failed.")
+            }
+        } catch (e: IOException) {
+            println("Deletion failed.")
+            e.printStackTrace()
+        }
     }
 }

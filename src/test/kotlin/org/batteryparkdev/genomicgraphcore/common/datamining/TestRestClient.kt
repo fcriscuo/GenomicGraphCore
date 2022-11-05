@@ -21,5 +21,5 @@ fun main() {
     val lineCount = loadFileFromUrl(filename, url)
     val success = (lineCount > 20_000)// file size may vary but should be > 20K
     LogService.info("line count = $lineCount   Success = $success")
-    deleteExistingTempFile(filename)
+    //deleteExistingTempFile(filename)
 }

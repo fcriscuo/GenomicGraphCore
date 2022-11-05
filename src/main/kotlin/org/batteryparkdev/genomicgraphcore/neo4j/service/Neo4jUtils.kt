@@ -131,6 +131,7 @@ author: Marcin Moskała
     /*
   Function to determine if a node has already been loaded into Neo4j
    */
+    @OptIn(ExperimentalStdlibApi::class)
     @Deprecated("Use nodeExistsPredicate method instead",
         replaceWith = ReplaceWith("nodeExistsPredicate(nodeId: NodeIdentifier)"),
         level = DeprecationLevel.ERROR)

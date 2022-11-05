@@ -32,7 +32,7 @@ value class ValidatedWriteFilePath private constructor (private val filePathName
             }
 
         private fun isAbsolutePath(filename:String): Boolean =
-            FilenameUtils.getPrefix(filename) != File.separator
+            FilenameUtils.getPrefix(filename) == "/"
 
         private fun isWritable(filePathName: String): Boolean =
             Paths.get(FilenameUtils.getFullPathNoEndSeparator(filePathName)).isWritable()

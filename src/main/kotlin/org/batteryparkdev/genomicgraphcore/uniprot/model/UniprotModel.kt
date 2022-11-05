@@ -8,7 +8,11 @@ import org.batteryparkdev.genomicgraphcore.common.parseOnSemicolon
 import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.uniprot.dao.UniprotModelDao
-
+/*
+Entry	Entry Name	Protein names	Gene Names	Length	Organism (ID)	Pathway	EC number
+Keywords	Interacts with	Tissue specificity	Gene Ontology IDs
+Post-translational modification	PubMed ID	Protein families
+ */
 
 data class UniprotModel(
     val entryId: String, val entryName: String, val proteinNames: String,

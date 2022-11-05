@@ -18,7 +18,8 @@ object Neo4jConnectionService {
 
     private val uri = Neo4jPropertiesService.neo4jUri
     private val logCypher = Neo4jPropertiesService.logCypherCommands
-    private val config: Config = Config.builder().withLogging(Logging.slf4j()).build()
+    //private val config: Config = Config.builder().withLogging(Logging.slf4j()).build()
+    private val config: Config = Config.builder().build()
     private val database = Neo4jPropertiesService.neo4jDatabase
     private val driver = GraphDatabase.driver(
         uri, AuthTokens.basic(Neo4jPropertiesService.neo4jAccount, Neo4jPropertiesService.neo4jPassword),
@@ -30,7 +31,7 @@ object Neo4jConnectionService {
         Neo4jCypherWriter.close()
     }
 
-    fun isSampleContext(): Boolean = database == "sample"
+    fun isTestingContext(): Boolean = database in listOf ("sample","test")
 
     // expose the current database name
     fun getDatabaseName(): String = database

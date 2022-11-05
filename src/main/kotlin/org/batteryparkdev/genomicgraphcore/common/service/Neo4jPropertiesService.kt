@@ -18,7 +18,7 @@ object Neo4jPropertiesService
         val logCypherCommands = config.getConfigPropertyAsBoolean("log.cypher.commands")
         val neo4jDatabasePath = config.getConfigPropertyAsString("neo4j.db.path")
         val neo4jDatabase = config.getConfigPropertyAsString("neo4j.database")
-
+        val neo4jTestDatabase = config.getConfigPropertyAsString("neo4j.test.database")
 
         private fun createLogFileDirectory():String {
            
@@ -42,8 +42,5 @@ object Neo4jPropertiesService
                     plus(".log")
 
         fun cypherLoggingStatus():Boolean = logCypherCommands
-
-
-
 
     }
