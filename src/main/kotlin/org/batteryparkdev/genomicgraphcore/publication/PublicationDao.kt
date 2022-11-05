@@ -66,7 +66,6 @@ fun publicationNodeExistsPredicate(nodeId: NodeIdentifier): Boolean {
                     resolvePublicationLabelCondition(nodeId) +
                     " AND $pubNodeName.pub_id = ${nodeId.idValue} " +
                     "return  $pubNodeName IS NOT NULL AS Predicate"
-             println(cypher)
             return try {
                 Neo4jConnectionService.executeCypherCommand(cypher).toBoolean()
             } catch (e: Exception) {

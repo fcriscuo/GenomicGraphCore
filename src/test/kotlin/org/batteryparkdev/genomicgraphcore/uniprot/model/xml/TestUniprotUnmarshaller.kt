@@ -6,7 +6,7 @@ import javax.xml.bind.JAXBContext
 fun main() {
 
     val text = URL("https://www.uniprot.org:443" +
-            "/uniprot/Q16538.xml?include=yes").readText()
+            "/uniprot/A6ND01.xml?include=yes").readText()
     println("Text: ${text.subSequence(0,140)}")
     val jaxbContext = JAXBContext.newInstance(Uniprot::class.java)
     val unmarshaller = jaxbContext.createUnmarshaller()
@@ -14,6 +14,11 @@ fun main() {
         val uniprot =  unmarshaller.unmarshal(it) as Uniprot
         uniprot.getEntryList()?.forEach { entry ->
             run {
+                println("+++ UniProt ID: ${entry.getNameList()?.get(0)}")
+                displayProteinNames(entry)
+                displayInteractions(entry)
+
+                entry.getGeneList()?.forEach { gene -> println(gene.getNameList()?.get(0)?.value )}
                 println("name: ${entry.getNameList()} db reference count = ${entry.getDbReferenceList()?.size}")
                 entry.getDbReferenceList()?.forEach { ref ->
                     run{
@@ -26,4 +31,19 @@ fun main() {
         }
 
     }
+}
+fun displayProteinNames(entry: Entry):Unit {
+    println("Recommended Protein Name: ${entry.protein?.recommendedName?.fullName?.value}")
+    entry.protein?.getAlternativeNameList()?.forEach { alt ->
+        println("-- Alternative Name: ${alt.fullName?.value}") }
+}
+
+
+fun displayInteractions(entry: Entry): Unit {
+    entry.getCommentList()?.forEach { comment -> run {
+        comment.interactant?.forEach { type ->
+            println("Interaction id: ${type.id}   Interact ID: ${type.intactId}}")
+            println("Label:  ${type.label}")
+        }
+    } }
 }

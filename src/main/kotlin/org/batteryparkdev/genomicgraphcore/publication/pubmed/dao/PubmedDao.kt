@@ -43,7 +43,7 @@ class PubmedDao(private val model: PubmedModel) {
                 val sectionId = mergePublicationSection(model)
                 Neo4jConnectionService.executeCypherCommand(
                     "MATCH (p:Publication), (s:PublicationSection) " +
-                            " WHERE p.pub_id = ${model.pubmedId}D AND s.section_id = $sectionId " +
+                            " WHERE p.pub_id = ${model.pubmedId} AND s.section_id = $sectionId " +
                             " CREATE (p) -[r:HAS_SECTION {type: \"Abstract\"} ]-> (s)"
                 )
             }

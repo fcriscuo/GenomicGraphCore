@@ -26,7 +26,7 @@ fun main() {
                     )
                     model.referenceList.forEach { ref -> println("PubMed ID: ${ref.parentId}  " +
                             " Reference ID: ${ref.referencePubmedId}" +
-                            " Journal: ${ref.journal}  Issue: ${ref.issue}") }
+                            " Journal: ${ref.citation.citation}  Issue: ${ref.citation.issue}") }
                 }
                 is Either.Left -> {
                     println("Exception ${articleEither.value.toString()}")

@@ -221,7 +221,9 @@ data class ReferenceCitation(val citation: String, val issue: String, val doiUrl
             var citation = ""
             var issue = ""
             var url = ""
-            reference.citation.split(" ").forEach {
+            reference.citation.split(" ")
+                .filter { it.isNotEmpty() }
+                .forEach {
                 word -> when {
                     word.startsWith("https") -> url = word
                     (word[0].isDigit()) -> issue = word
