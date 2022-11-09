@@ -14,7 +14,7 @@ class UniprotModelDao(private val uniprotModel: UniprotModel) {
         .plus(" RETURN  ${UniprotModel.nodename} \n")
 
     private fun generateMergeCypher(): String =
-        " CALL apoc.merge.node(['UniProt'], {entry_id: ${uniprotModel.entryId.formatNeo4jPropertyValue()} }," +
+        " CALL apoc.merge.node(['UniProtEntry'], {entry_id: ${uniprotModel.entryId.formatNeo4jPropertyValue()} }," +
                 "{ entry_name: ${uniprotModel.entryName.formatNeo4jPropertyValue()}, " +
                 " protein_names: ${uniprotModel.proteinNames.parseToQuotedNeo4jStringList()}, " +
                 " gene_names: ${uniprotModel.geneNames.parseToNeo4jStringList(' ')}, " +
