@@ -56,7 +56,7 @@ data class UniprotIdModel(val entryId: String, val reviewed: Boolean, val entryN
         override val nodelabel: String
             get() = "UniProtEntry"
         override val nodeIdProperty: String
-            get() = "entryId"
+            get() = "entry_id"
 
         // Function to retrieve the identifiers data from UniProt and store it in a local file
         // for processing
