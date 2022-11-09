@@ -6,7 +6,7 @@ import javax.xml.bind.JAXBContext
 fun main() {
 
     val text = URL("https://www.uniprot.org:443" +
-            "/uniprot/A6ND01.xml?include=yes").readText()
+            "/uniprot/A0A024R6A3.xml?include=yes").readText()
     println("Text: ${text.subSequence(0,140)}")
     val jaxbContext = JAXBContext.newInstance(Uniprot::class.java)
     val unmarshaller = jaxbContext.createUnmarshaller()
