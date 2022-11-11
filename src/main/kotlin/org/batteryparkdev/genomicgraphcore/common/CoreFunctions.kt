@@ -73,6 +73,37 @@ fun String.parseOnTab(): List<String> = this.parseOnDelimiter('\t')
 
 fun String.parseOnPipe(): List<String> = this.parseOnDelimiter('|')
 
+fun String.parseOnSpace(): List<String> = this.parseOnDelimiter(' ')
+
+fun String.resolveFirstWord():String = this.parseOnSpace().first().replace(":","")
+
+/*
+    Function to resolve the first quoted String in a supplied text
+    Quote marks are not included
+    Used to identify quoted text in GO terms
+    */
+
+fun String.resolveQuotedString():String {
+    val openQuote = this.indexOf('"')
+    val closeQuote = this.lastIndexOf('"')
+    return when (closeQuote > openQuote){
+        true -> this.substring(openQuote+1, closeQuote)
+        false -> ""
+    }
+}
+/*
+parse an integer value embedded in a alphanumeric String (e.g. PMID)
+ */
+fun String.parseIntegerValue (): Int {
+    var id:String =""
+    var index = 0
+    while (this[index] in '0'..'9') {
+        id = id.plus(this[index])
+        index +=1
+    }
+    return id.toInt()
+}
+
 /*
 Double quotes (i.e. ") inside a text field cause Cypher
 processing errors
@@ -152,3 +183,4 @@ fun formatIntList(intList: String): String =
 
         false -> "[0]"
     }
+
