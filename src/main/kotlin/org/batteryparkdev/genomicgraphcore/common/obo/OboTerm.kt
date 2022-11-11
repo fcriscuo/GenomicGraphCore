@@ -10,23 +10,27 @@ data class OboTerm(
     val id: String, val namespace: String, val name: String,
     val definition: String,
     val isObsolete: Boolean,
-    val pubmedRelationshipDefinitions: List<RelationshipDefinition>,
-    val synonyms: List<Synonym>,
-    val relationshipList: List<Relationship>,
-    val xrefList: List<Xref>
+    val pubmedIdList: List<Int>,
+    val synonyms: List<OboSynonym>,
+    val relationshipList: List<OboRelationship>,
+    val xrefList: List<OboXref>
 ) {
+
+    val nodeIdentifier = NodeIdentifier("OboTerm","obo_id", id.toString())
     fun isValid(): Boolean =
         (id.isNotBlank().and(name.isNotBlank().and(namespace.isNotBlank())))
 
-    companion object  {
+
+
+    companion object {
         /*
         Function to process a list of text lines encompassing a GO Term
          */
-        fun generateGoTerm(termlines: List<String>): OboTerm {
+        fun generateOboTerm(termlines: List<String>): OboTerm {
             var id: String = ""
-            var name: String  = ""
+            var name: String = ""
             var namespace: String = ""
-            var definition: String  = ""
+            var definition: String = ""
             var obsolete = false
             termlines.forEach { line ->
                 run {
@@ -44,27 +48,23 @@ data class OboTerm(
             return OboTerm(
                 id, namespace, name, definition,
                 obsolete,
-                resolvePubMedIdentifiers(id, termlines), Synonym.resolveSynonyms(termlines),
-                Relationship.resolveRelationships(termlines), Xref.resolveXrefs(termlines)
+                resolvePubMedIdentifiers(id, termlines), OboSynonym.resolveSynonyms(termlines),
+                OboRelationship.resolveRelationships(termlines), OboXref.resolveXrefs(termlines)
             )
         }
 
         @OptIn(ExperimentalStdlibApi::class)
-        private fun resolveIsObsoleteBoolean(line: String):Boolean = line.lowercase().contains("true")
+        private fun resolveIsObsoleteBoolean(line: String): Boolean = line.lowercase().contains("true")
 
         /*
-    Function to resolve a List of PubMed Ids from a GO Term
+    Function to resolve a List of PubMed Ids from an OBO line
     Input parameter is a List of lines comprising a complete
-    GO Term
+    OBO Term
     Format is PMID:7722643
      */
-        private fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<RelationshipDefinition> {
+        private fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<Int> {
             val pmidSet = mutableSetOf<Int>()
             val pmidLabel = "PMID"
-            val parentNode = NodeIdentifier(
-                "GoTerm", "go_id",
-                goId
-            )
             lines.stream().filter { line -> line.contains(pmidLabel) }
                 .forEach { line ->
                     run {
@@ -78,50 +78,40 @@ data class OboTerm(
                         }
                     }
                 }
-            val relDefinitions = mutableListOf<RelationshipDefinition>()
-            pmidSet.forEach { id ->
-                run {
-                    val childNode = NodeIdentifier(
-                        "Publication", "pub_id",
-                       id.toString(), "PubMed"
-                    )
-                    relDefinitions.add(RelationshipDefinition(parentNode, childNode, "HAS_PUBLICATION"))
-                }
-            }
-            return relDefinitions.toList()
+            return pmidSet.toList()
         }
     }
 }
 
-data class Synonym(
+data class OboSynonym(
     val synonymText: String,
     val synonymType: String
 ) {
-    companion object  {
-        fun resolveSynonyms(termLines: List<String>): List<Synonym> {
-            val synonyms = mutableListOf<Synonym>()
+    companion object {
+        fun resolveSynonyms(termLines: List<String>): List<OboSynonym> {
+            val synonyms = mutableListOf<OboSynonym>()
             termLines.filter { line -> line.startsWith("synonym:") }
                 .forEach { syn -> synonyms.add(resolveSynonym(syn)) }
             return synonyms.toList()
         }
 
-        private fun resolveSynonym(line: String): Synonym {
+        private fun resolveSynonym(line: String): OboSynonym {
             val text = line.resolveQuotedString()
             val startIndex = line.lastIndexOf('"') + 2
             val endIndex = startIndex + line.substring(startIndex).indexOf(' ')
             val type = line.substring(startIndex, endIndex)
-            return Synonym(text, type)
+            return OboSynonym(text, type)
         }
     }
 }
 
-data class Relationship(
+data class OboRelationship(
     val type: String,
     val qualifier: String = "",
     val targetId: String,
     val description: String
 ) {
-    companion object  {
+    companion object {
 
         private fun relationshipFilter(line: String): Boolean =
             when (line.resolveFirstWord()) {
@@ -129,19 +119,19 @@ data class Relationship(
                 else -> false
             }
 
-        fun resolveRelationships(termlines: List<String>): List<Relationship> {
-            val relationships = mutableListOf<Relationship>()
+        fun resolveRelationships(termlines: List<String>): List<OboRelationship> {
+            val relationships = mutableListOf<OboRelationship>()
             termlines.filter { line -> relationshipFilter(line) }
                 .forEach { line -> relationships.add(resolveRelationship(line)) }
             return relationships
         }
 
-        private fun resolveRelationship(line: String): Relationship {
+        private fun resolveRelationship(line: String): OboRelationship {
             val type = line.resolveFirstWord()
             val targetStart = line.indexOf("GO:")
             val targetId = line.substring(targetStart, targetStart + 10)
             val description = line.substring(targetStart + 13)
-            return Relationship(type, resolveQualifier(line), targetId, description)
+            return OboRelationship(type, resolveQualifier(line), targetId, description)
         }
 
         private fun resolveQualifier(line: String): String {
@@ -152,27 +142,28 @@ data class Relationship(
     }
 }
 
-data class Xref(
+data class OboXref(
     val source: String,
     val id: String,
     val description: String = ""
 ) {
-    companion object  {
-        fun resolveXrefs(termLines: List<String>): List<Xref> {
-            val xrefs = mutableListOf<Xref>()
+    companion object {
+        fun resolveXrefs(termLines: List<String>): List<OboXref> {
+            val xrefs = mutableListOf<OboXref>()
             termLines.filter { line -> line.startsWith("xref") }
                 .forEach { line -> xrefs.add(resolveXref(line)) }
             return xrefs
         }
 
-        private fun resolveXref(line: String): Xref {
+        private fun resolveXref(line: String): OboXref {
             val sourceAndId = line.split(" ")[1].split(":")
             val source = sourceAndId[0]
             val id = sourceAndId[1]
-            return Xref(source, id, line.resolveQuotedString())
+            return OboXref(source, id, line.resolveQuotedString())
         }
     }
 }
+
 
 
 

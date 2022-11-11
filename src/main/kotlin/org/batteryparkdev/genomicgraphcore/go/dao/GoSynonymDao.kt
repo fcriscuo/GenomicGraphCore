@@ -1,8 +1,8 @@
 package org.batteryparkdev.genomicgraphcore.go.dao
 
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
-import org.batteryparkdev.genomicgraphcore.go.GoSynonym
-import org.batteryparkdev.genomicgraphcore.go.GoTerm
+import org.batteryparkdev.genomicgraphcore.common.obo.OboSynonym
+import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 
 /*
@@ -28,16 +28,16 @@ object GoSynonymDao {
     /*
     Create the SynonymCollection node
      */
-    private fun addSynonymCollectionNode(goId: String): String {
-        val loadCypher = synCollectLoadTemplate.replace("GOID",goId.formatNeo4jPropertyValue())
+    private fun addSynonymCollectionNode(oboId: String): String {
+        val loadCypher = synCollectLoadTemplate.replace("GOID",oboId.formatNeo4jPropertyValue())
         return Neo4jConnectionService.executeCypherCommand(loadCypher)
     }
 
     /*
     Create a relationship between the GoTerm and the new SynonymCollection Node
      */
-    private fun addSynonymCollRelationship(goId: String) {
-        val relCypher = cypherRelationshipTemplate.replace("GOID", goId.formatNeo4jPropertyValue())
+    private fun addSynonymCollRelationship(oboId: String) {
+        val relCypher = cypherRelationshipTemplate.replace("GOID", oboId.formatNeo4jPropertyValue())
         Neo4jConnectionService.executeCypherCommand(relCypher)
     }
 
@@ -45,7 +45,7 @@ object GoSynonymDao {
     Create the Synonym node(s) and their relationship to the SynonymCollection Node
     Unique identifier for a synomym is the GO term id plus an index (e.g. GO:0000001-1)
      */
-   private fun addSynonymNodes(goId: String, synonyms: List<GoSynonym>) {
+   private fun addSynonymNodes(goId: String, synonyms: List<OboSynonym>) {
         var index = 1
         synonyms.forEach { syn ->
             run {
@@ -64,16 +64,16 @@ object GoSynonymDao {
     /*
     Public method to persist GO Synonym nodes and relationships
      */
-    fun persistGoSynonymData(goTerm: GoTerm){
-        if (GoTermDao.goTermNodeExistsPredicate(goTerm.goId)
-                .and(goTerm.synonyms.isNotEmpty())) {
-            addSynonymCollectionNode(goTerm.goId)
-            addSynonymCollRelationship(goTerm.goId)
-            addSynonymNodes(goTerm.goId, goTerm.synonyms)
+    fun persistGoSynonymData(oboTerm: OboTerm){
+        if (GoTermDao.goTermNodeExistsPredicate(oboTerm)
+                .and(oboTerm.synonyms.isNotEmpty())) {
+            addSynonymCollectionNode(oboTerm.id)
+            addSynonymCollRelationship(oboTerm.id)
+            addSynonymNodes(oboTerm.id, oboTerm.synonyms)
         } else {
-            when (GoTermDao.goTermNodeExistsPredicate(goTerm.goId)) {
-                true -> println("GO Term ${goTerm.goId} does not have synonyms")
-                false -> println("ERROR GO Term ${goTerm.goId} is not in the database")
+            when (GoTermDao.goTermNodeExistsPredicate(oboTerm)) {
+                true -> println("GO Term ${oboTerm.id} does not have synonyms")
+                false -> println("ERROR GO Term ${oboTerm.id} is not in the database")
             }
         }
     }
