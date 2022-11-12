@@ -5,6 +5,7 @@ import org.batteryparkdev.genomicgraphcore.common.resolveFirstWord
 import org.batteryparkdev.genomicgraphcore.common.resolveQuotedString
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
+import java.util.*
 
 data class OboTerm(
     val id: String, val namespace: String, val name: String,
@@ -145,7 +146,8 @@ data class OboRelationship(
 data class OboXref(
     val source: String,
     val id: String,
-    val description: String = ""
+    val description: String = "",
+    val xrefKey:String = UUID.randomUUID().toString()
 ) {
     companion object {
         fun resolveXrefs(termLines: List<String>): List<OboXref> {

@@ -9,7 +9,6 @@ import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
 
 /*
 Responsible for data access operations for GoTerm nodes in the neo4j database
-
  */
 object GoTermDao {
 
@@ -19,15 +18,23 @@ object GoTermDao {
 
     fun loadGoTermNode(oboTerm: OboTerm): String {
         try {
-            val merge = cypherLoadTemplate.replace("GOID", oboTerm.id.formatNeo4jPropertyValue())
-                    .replace("GONAME", oboTerm.name.formatNeo4jPropertyValue())
-                    .replace("GODEFINITION", oboTerm.definition.formatNeo4jPropertyValue())
-            return Neo4jConnectionService.executeCypherCommand(merge)
+           val ret1 = mergeGoTermN(oboTerm)
+            if (ret1.isNotEmpty()){
+                addGoNamespaceLabel(oboTerm)
+            }
+            return ret1
         } catch (e: Exception) {
             println(e.message)
             println("Failed to merge GoTerm: ${oboTerm.id} ${oboTerm.name}")
         }
-        return " "
+        return ""
+    }
+
+    private fun mergeGoTermN(oboTerm: OboTerm): String {
+            val merge = cypherLoadTemplate.replace("GOID", oboTerm.id.formatNeo4jPropertyValue())
+                .replace("GONAME", oboTerm.name.formatNeo4jPropertyValue())
+                .replace("GODEFINITION", oboTerm.definition.formatNeo4jPropertyValue())
+            return Neo4jConnectionService.executeCypherCommand(merge)
     }
 
     /*
@@ -43,7 +50,7 @@ object GoTermDao {
     /*
     Function to add a label to a GoTerm node based on the term's GO namespace value
      */
-    fun addGoNamespaceLabel(oboTerm: OboTerm) {
+    private fun addGoNamespaceLabel(oboTerm: OboTerm) {
         val id =oboTerm.id
         val label = oboTerm.namespace
         val nodeId = NodeIdentifier("GoTerm", "go_id",

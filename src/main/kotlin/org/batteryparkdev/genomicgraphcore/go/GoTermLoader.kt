@@ -13,15 +13,16 @@ import org.batteryparkdev.genomicgraphcore.common.obo.OboTermSupplier
 import org.batteryparkdev.genomicgraphcore.go.dao.GoRelationshipDao
 import org.batteryparkdev.genomicgraphcore.go.dao.GoSynonymDao
 import org.batteryparkdev.genomicgraphcore.go.dao.GoTermDao
-
+import org.batteryparkdev.genomicgraphcore.go.dao.GoXrefDao
+import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
+import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
 
 /*
 Responsible for loading Gene Ontology nodes and relationships into
 the Neo4j database
  */
 object OboTermLoader {
-
     /*
     Generate a stream of GO terms from the supplied OBO file
      */
@@ -92,14 +93,34 @@ object OboTermLoader {
     Create Publication placeholder nodes for this GO Term's PubMed entries
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun CoroutineScope.persistFoTermPublications(OboTerms: ReceiveChannel<OboTerm>) =
+    private fun CoroutineScope.persistGoTermPublications(oboTerms: ReceiveChannel<OboTerm>) =
         produce<OboTerm> {
-            for (OboTerm in OboTerms) {
-                OboTerm.pubmedIdList.forEach { pmid ->
+            for (oboTerm in oboTerms) {
+                oboTerm.pubmedIdList
+                    .map{pmid -> createPublicationRelationshipDefinition(pmid, oboTerm)}
+                    .forEach { relDef ->
                    // GoPubMedDao.loadGoPublication(it)
-                    NodeIdentifierDao.defineRelationship(it)
+                    NodeIdentifierDao.defineRelationship(relDef)
                 }
-                send(OboTerm)
+                send(oboTerm)
+            }
+        }
+
+    private fun createPublicationRelationshipDefinition( pmid: Int, oboTerm:OboTerm): RelationshipDefinition
+       = RelationshipDefinition( oboTerm.nodeIdentifier,  NodeIdentifier("Publication", "pub_id",
+    pmid.toString(), "PubMed"), "HAS_PUBLICATION")
+
+
+    /*
+    Persist the GO Term's Xrefs
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun CoroutineScope.persistOboTermXrefs (oboTerms: ReceiveChannel<OboTerm>) =
+        produce<OboTerm>{
+            for (oboTerm in oboTerms){
+                GoXrefDao.persistXrefs(oboTerm)
+                send(oboTerm)
+                delay(20)
             }
         }
 
@@ -107,13 +128,13 @@ object OboTermLoader {
     Persist the GO Term's relationships to other GO Terms
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun CoroutineScope.persistOboTermRelationships(OboTerms: ReceiveChannel<OboTerm>) =
+    private fun CoroutineScope.persistOboTermRelationships(oboTerms: ReceiveChannel<OboTerm>) =
         produce<String> {
-            for (OboTerm in OboTerms) {
-                if (OboTerm.relationshipList.isNotEmpty()) {
-                    GoRelationshipDao.loadOboTermRelationships(OboTerm)
+            for (oboTerm in oboTerms) {
+                if (oboTerm.relationshipList.isNotEmpty()) {
+                    GoRelationshipDao.loadGoTermRelationships(oboTerm)
                 }
-                send(OboTerm.goId)
+                send(oboTerm.id)
                 delay(10)
             }
         }
@@ -125,7 +146,8 @@ object OboTermLoader {
         var nodeCount = 0
         val stopwatch = Stopwatch.createStarted()
         val goIds = persistOboTermRelationships(
-            persistFoTermPublications(
+            persistOboTermXrefs(
+            persistGoTermPublications(
                 persistOboTermSynonyms(
                     persistOboTermNode(
                         filterOboTerms(
@@ -134,6 +156,7 @@ object OboTermLoader {
                     )
                 )
             )
+        )
         )
 
         for (goId in goIds) {
