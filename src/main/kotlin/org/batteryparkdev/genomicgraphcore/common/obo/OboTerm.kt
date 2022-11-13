@@ -63,7 +63,7 @@ data class OboTerm(
     OBO Term
     Format is PMID:7722643
      */
-        private fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<Int> {
+         fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<Int> {
             val pmidSet = mutableSetOf<Int>()
             val pmidLabel = "PMID"
             lines.stream().filter { line -> line.contains(pmidLabel) }

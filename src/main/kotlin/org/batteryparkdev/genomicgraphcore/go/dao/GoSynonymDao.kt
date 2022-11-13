@@ -13,16 +13,16 @@ object GoSynonymDao {
     /*
      Cypher database templates for Synonym related transactions
      */
-    private const val synCollectLoadTemplate = "MERGE (gsc:GoSynonymCollection{go_id: GOID}) " +
-            " RETURN gsc.go_id"
+    private const val synCollectLoadTemplate = "MERGE (gsc:GoSynonymCollection{obo_id: GOID}) " +
+            " RETURN gsc.obo_id"
     private const val cypherRelationshipTemplate = "MATCH (got:GoTerm), (gsc:GoSynonymCollection) " +
-            " WHERE got.go_id = GOID  AND gsc.go_id = GOID " +
+            " WHERE got.obo_id = GOID  AND gsc.obo_id = GOID " +
             " MERGE (got) - [r:HAS_GO_SYNONYM_COLLECTION] -> (gsc) " +
             " RETURN r"
     private const val synonymLoadTemplate = "MERGE (gos:GoSynonym{synonym_id: SYNID}) " +
             " SET gos += {text: TEXT, type: TYPE} RETURN gos.synonym_id "
     private const val synonymRelationshipTemplate = "MATCH (gsc:GoSynonymCollection), " +
-            " (gos:GoSynonym) WHERE gsc.go_id = GOID AND gos.synonym_id = SYNID " +
+            " (gos:GoSynonym) WHERE gsc.obo_id = GOID AND gos.synonym_id = SYNID " +
             " MERGE (gsc) - [r:HAS_GO_SYNONYM] -> (gos) RETURN r"
 
     /*
@@ -49,7 +49,7 @@ object GoSynonymDao {
         var index = 1
         synonyms.forEach { syn ->
             run {
-                val synId = goId.formatNeo4jPropertyValue().plus("-").plus(index.toString())
+                val synId = goId.plus("-").plus(index.toString()).formatNeo4jPropertyValue()
                 val loadCypher = synonymLoadTemplate.replace("SYNID", synId)
                     .replace("TEXT", syn.synonymText.formatNeo4jPropertyValue())
                     .replace("TYPE", syn.synonymType.formatNeo4jPropertyValue())

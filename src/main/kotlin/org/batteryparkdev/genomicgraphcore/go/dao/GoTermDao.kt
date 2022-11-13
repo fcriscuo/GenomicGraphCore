@@ -12,14 +12,16 @@ Responsible for data access operations for GoTerm nodes in the neo4j database
  */
 object GoTermDao {
 
-    private const val cypherLoadTemplate = "MERGE (got:GoTerm{ go_id: GOID}) " +
+    private const val cypherLoadTemplate = "MERGE (got:OboTerm{ obo_id: GOID}) " +
             " SET got += {name:GONAME, definition:GODEFINITION} " +
-            " RETURN got.go_id"
+            " RETURN got.obo_id"
 
     fun loadGoTermNode(oboTerm: OboTerm): String {
         try {
            val ret1 = mergeGoTermN(oboTerm)
+
             if (ret1.isNotEmpty()){
+                addGoTermLabel(oboTerm)
                 addGoNamespaceLabel(oboTerm)
             }
             return ret1
@@ -41,11 +43,28 @@ object GoTermDao {
     Function to create a placeholder GoTerm which allows inter-GoTerm
     relationships to be defined before the target GoTerm is fully loaded
      */
-    fun createPlaceholderGoTerm(goId: String):String =
-       Neo4jConnectionService.executeCypherCommand(
-           "MERGE (got:GoTerm{go_id: " +
-                  " ${goId.formatNeo4jPropertyValue()}})  RETURN got.go_id"
-       )
+    fun createPlaceholderOboTerm(newId: String):String {
+        Neo4jConnectionService.executeCypherCommand(
+            "MERGE (got:OboTerm{obo_id: " +
+                    " ${newId.formatNeo4jPropertyValue()}})  RETURN got.obo_id"
+        )
+        val nodeId = NodeIdentifier("OboTerm", "obo_id",
+            newId,
+            "GoTerm")
+        return newId
+    }
+
+    /*
+    Function to add GoTerm label to new OboTerm node
+     */
+    private fun addGoTermLabel(oboTerm: OboTerm) {
+        val id = oboTerm.id
+        val label = "GoTerm"
+        val nodeId = NodeIdentifier("OboTerm", "obo_id",
+            oboTerm.id,
+            label)
+        Neo4jUtils.addLabelToNode(nodeId)
+    }
 
     /*
     Function to add a label to a GoTerm node based on the term's GO namespace value
@@ -53,7 +72,7 @@ object GoTermDao {
     private fun addGoNamespaceLabel(oboTerm: OboTerm) {
         val id =oboTerm.id
         val label = oboTerm.namespace
-        val nodeId = NodeIdentifier("GoTerm", "go_id",
+        val nodeId = NodeIdentifier("GoTerm", "obo_id",
            oboTerm.id,
             label)
         Neo4jUtils.addLabelToNode(nodeId)

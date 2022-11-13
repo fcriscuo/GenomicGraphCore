@@ -79,7 +79,7 @@ fun main(args: Array<String>): Unit = runBlocking {
     if (Neo4jConnectionService.isTestingContext()) {
         println("WARNING: Invoking this application will delete all Gene Ontology data from the ${database} database")
         println("There will be a 20 second delay period to cancel this execution (CTRL-C) if this is not your intent")
-        Thread.sleep(20_000L)
+       // Thread.sleep(20_000L)
         loader.deleteGoNodes()
     }
     println("Gene Ontology data will now be loaded from: $filename into the ${database} Neo4j database")

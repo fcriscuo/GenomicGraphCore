@@ -9,20 +9,20 @@ import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
 
 /*
 Responsible for creating and managing neo4j labeled relationships between
-GoTerm nodes
+OboTerm nodes
  */
 object GoRelationshipDao {
 
     private const val relationshipCypher =
-        "MATCH (got1:GoTerm), (got2:GoTerm) WHERE " +
-                "got1.go_id = SOURCE  AND got2.go_id = TARGET " +
+        "MATCH (got1:OboTerm), (got2:OboTerm) WHERE " +
+                "got1.obo_id = SOURCE  AND got2.obo_id = TARGET " +
                 " MERGE (got1) - [r:RELATIONSHIP] -> (got2) " +
                 " ON CREATE SET " +
                 " r+= {description: DESCRIPTION}" +
                 " RETURN r"
 
     @OptIn(ExperimentalStdlibApi::class)
-    private fun loadGoTermRelationship(goId: String, goRel: OboRelationship) {
+    private fun loadOboTermRelationship(goId: String, goRel: OboRelationship) {
         val cypher = relationshipCypher.replace("SOURCE", goId.formatNeo4jPropertyValue())
             .replace("TARGET", goRel.targetId.formatNeo4jPropertyValue())
             .replace("RELATIONSHIP", goRel.type.uppercase())
@@ -32,18 +32,18 @@ object GoRelationshipDao {
 
     /*
     Public function to create a Relationship node for each of a GO Term's relationships
-    A placeholder GoTerm node is created for the relationship target node if that term
+    A placeholder OboTerm node is created for the relationship target node if that term
     has not been loaded yet
      */
-    fun loadGoTermRelationships(oboTerm: OboTerm) {
+    fun loadOboTermRelationships(oboTerm: OboTerm) {
         val goId = oboTerm.id
         oboTerm.relationshipList
             .forEach {rel ->
             run {
                 if (Neo4jUtils.nodeExistsPredicate( NodeIdentifier("OboTerm", "obo_id", rel.targetId)).not()) {
-                    GoTermDao.createPlaceholderGoTerm(rel.targetId)
+                    GoTermDao.createPlaceholderOboTerm(rel.targetId)
                 }
-                loadGoTermRelationship(goId, rel)
+                loadOboTermRelationship(goId, rel)
             }
         }
     }

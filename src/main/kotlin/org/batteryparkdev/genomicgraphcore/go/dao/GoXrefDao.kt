@@ -24,11 +24,11 @@ object GoXrefDao {
         )
 
     private fun generateGoXrefCollectionCypher(oboId: String): String =
-        "CALL apoc.merge.node(['GoXrefCollection'],{go_id: ${oboId.formatNeo4jPropertyValue()}}," +
-                " created: datetime()}, " +
+        "CALL apoc.merge.node(['GoXrefCollection'],{obo_id: ${oboId.formatNeo4jPropertyValue()}}," +
+                " {created: datetime()}, " +
                 " { last_mod: datetime()}) YIELD node AS xrefcoll " +
-                " MATCH (goterm:GoTerm {go_id:${oboId.formatNeo4jPropertyValue()}}) " +
-                " CALL apoc.merge.relationship( goterm, 'HAS_XREF_COLLECTION',,xrefcoll) " +
+                " MATCH (goterm:GoTerm {obo_id:${oboId.formatNeo4jPropertyValue()}}) " +
+                " CALL apoc.merge.relationship( goterm, 'HAS_XREF_COLLECTION',{}, {},xrefcoll) " +
                 " YIELD rel RETURN rel \n"
 
     private fun createXrefNodeAndCollection(oboId: String, xref: OboXref) =
@@ -41,8 +41,8 @@ object GoXrefDao {
                   " description: ${xref.description.formatNeo4jPropertyValue()} ," +
                   " created: datetime()}, " +
                   " { last_mod: datetime()}) YIELD node AS xref " +
-                  " MATCH (xrefcoll: GoXrefCollection {go_id: ${oboId.formatNeo4jPropertyValue()}) " +
-                  " CALL apoc.merge.relationship(xrefcoll, 'HAS_XREF',, xref ) " +
+                  " MATCH (xrefcoll: GoXrefCollection {obo_id: ${oboId.formatNeo4jPropertyValue()}}) " +
+                  " CALL apoc.merge.relationship(xrefcoll, 'HAS_XREF',{}, {}, xref ) " +
                   " YIELD rel RETURN rel \n"
 
 

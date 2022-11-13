@@ -1,5 +1,10 @@
 package org.batteryparkdev.genomicgraphcore.go
 
+import org.batteryparkdev.genomicgraphcore.common.obo.OboRelationship
+import org.batteryparkdev.genomicgraphcore.common.obo.OboSynonym
+import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
+import org.batteryparkdev.genomicgraphcore.common.obo.OboXref
+
 fun main() {
     val synonyms = listOf<String>(
         "synonym: \"activation of receptor internalization\" NARROW []",
@@ -8,7 +13,7 @@ fun main() {
         "synonym: \"up-regulation of receptor internalization\" EXACT []",
         "synonym: \"upregulation of receptor internalization\" EXACT []"
     )
-    GoSynonym.resolveSynonyms(synonyms).forEach { syn ->
+    OboSynonym.resolveSynonyms(synonyms).forEach { syn ->
         println("Synonym: ${syn.synonymText}   ${syn.synonymType}")
     }
     val relationships = listOf<String>(
@@ -18,7 +23,7 @@ fun main() {
         "intersection_of: part_of GO:0000082 ! G1/S transition of mitotic cell cycle",
         "relationship: part_of GO:0000082 ! G1/S transition of mitotic cell cycle"
     )
-    Relationship.resolveRelationships(relationships).forEach { rel ->
+    OboRelationship.resolveRelationships(relationships).forEach { rel ->
         println("Relationship: ${rel.type}   ${rel.qualifier}  ${rel.targetId}   ${rel.description}")
     }
 
@@ -29,13 +34,9 @@ fun main() {
         "xref: Reactome:R-HSA-5658001 \"Defective LCT does not hydrolyze Lac\"",
         "xref: RHEA:10076"
     )
-    Xref.resolveXrefs(xrefs).forEach { xref ->
+    OboXref.resolveXrefs(xrefs).forEach { xref ->
         println("XREF: ${xref.source}   ${xref.id}  ${xref.description}")
     }
-    //PMIDs
-    val PMIDlist = listOf ( "def: \"An enzyme complex that catalyzes the transfer of GlcNAc from UDP-GlcNA.\" [GOC:kp, GOC:rb, PMID:10944123, PMID:15163411]\n")
-    GoTerm.resolvePubMedIdentifiers("GO:0000700",PMIDlist).forEach { rd ->
-        println("RelDef: ${rd.parentNode}  ${rd.relationshipType}   ${rd.childNode}")
-    }
+
 
 }
