@@ -30,7 +30,7 @@ class GoDataImporter(private val goFilename:String): CoroutineScope {
     fun <T> CoroutineScope.asyncIO(ioFun: () -> T) = async(Dispatchers.IO) { ioFun() }
     fun <T> CoroutineScope.asyncDefault(defaultFun: () -> T) = async(Dispatchers.Default) { defaultFun() }
 
-    private val nodeNameList = listOf<String>("GoTerm","GoSynonymCollection", "GoSynonym")
+    private val nodeNameList = listOf<String>("GoTerm","GoSynonymCollection", "GoSynonym","Xref","GoXrefCollection")
 
     private fun loadGeneOntologyData():String {
         GoTermLoader.loadGoTerms(goFilename)

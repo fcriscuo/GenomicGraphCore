@@ -2,6 +2,7 @@ package org.batteryparkdev.genomicgraphcore.go.dao
 
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
+import org.batteryparkdev.genomicgraphcore.common.removeInternalQuotes
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
@@ -34,11 +35,16 @@ object GoTermDao {
         return ""
     }
 
+    /*
+    map OboTerm properties to Neo4j node properties
+    n.b. change internal quotes (i.e. ") to single quotes (i.e. ') in comments & definition fields
+     */
     private fun mergeGoTerm(oboTerm: OboTerm): String {
+             
             val merge = cypherLoadTemplate.replace("GOID", oboTerm.id.formatNeo4jPropertyValue())
                 .replace("GONAME", oboTerm.name.formatNeo4jPropertyValue())
-                .replace("GODEFINITION", oboTerm.definition.formatNeo4jPropertyValue())
-                .replace("COMMENT", oboTerm.comment.formatNeo4jPropertyValue())
+                .replace("GODEFINITION", oboTerm.definition.removeInternalQuotes().formatNeo4jPropertyValue())
+                .replace("COMMENT", oboTerm.comment.removeInternalQuotes().formatNeo4jPropertyValue())
                 .replace("URL",resolveUrL(oboTerm.id))
             return Neo4jConnectionService.executeCypherCommand(merge)
     }

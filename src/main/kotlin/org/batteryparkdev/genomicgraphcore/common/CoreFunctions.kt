@@ -97,11 +97,11 @@ parse an integer value embedded in a alphanumeric String (e.g. PMID)
 fun String.parseIntegerValue (): Int {
     var id:String =""
     var index = 0
-    while (this[index] in '0'..'9') {
+    while (index < this.length && this[index] in '0'..'9' ) {
         id = id.plus(this[index])
         index +=1
     }
-    return id.toInt()
+    return if (id.length>0) id.toInt() else 0
 }
 
 /*
