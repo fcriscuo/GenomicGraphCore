@@ -14,5 +14,6 @@ object FilesPropertyService {
     val uniprotRestUrl=config.getConfigPropertyAsString("uniprot.core.rest.url")
     val uniprotIdentifiersRestUrl = config.getConfigPropertyAsString("uniprot.identifiers.url")
     val uniprotLocalFilename=config.getConfigPropertyAsString("uniprot.core.filename")
+    val geneontologyDownloadUrl=config.getConfigPropertyAsString("geneontology.download.url")
 
 }

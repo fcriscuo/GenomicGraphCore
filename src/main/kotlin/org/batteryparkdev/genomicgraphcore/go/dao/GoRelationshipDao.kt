@@ -41,7 +41,7 @@ object GoRelationshipDao {
             .forEach {rel ->
             run {
                 if (Neo4jUtils.nodeExistsPredicate( NodeIdentifier("OboTerm", "obo_id", rel.targetId)).not()) {
-                    GoTermDao.createPlaceholderOboTerm(rel.targetId)
+                    GoTermDao.createPlaceholderOboTerm(rel.targetId,rel.description)
                 }
                 loadOboTermRelationship(goId, rel)
             }

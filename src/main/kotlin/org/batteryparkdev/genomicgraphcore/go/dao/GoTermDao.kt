@@ -12,13 +12,15 @@ Responsible for data access operations for GoTerm nodes in the neo4j database
  */
 object GoTermDao {
 
+    private const val GO_URL_TEMPLATE = "https://www.ebi.ac.uk/QuickGO/term/GO_ID"
     private const val cypherLoadTemplate = "MERGE (got:OboTerm{ obo_id: GOID}) " +
-            " SET got += {name:GONAME, definition:GODEFINITION} " +
+            " SET got += {name:GONAME, definition:GODEFINITION," +
+            " comment: COMMENT, url: URL} " +
             " RETURN got.obo_id"
 
     fun loadGoTermNode(oboTerm: OboTerm): String {
         try {
-           val ret1 = mergeGoTermN(oboTerm)
+           val ret1 = mergeGoTerm(oboTerm)
 
             if (ret1.isNotEmpty()){
                 addGoTermLabel(oboTerm)
@@ -32,18 +34,23 @@ object GoTermDao {
         return ""
     }
 
-    private fun mergeGoTermN(oboTerm: OboTerm): String {
+    private fun mergeGoTerm(oboTerm: OboTerm): String {
             val merge = cypherLoadTemplate.replace("GOID", oboTerm.id.formatNeo4jPropertyValue())
                 .replace("GONAME", oboTerm.name.formatNeo4jPropertyValue())
                 .replace("GODEFINITION", oboTerm.definition.formatNeo4jPropertyValue())
+                .replace("COMMENT", oboTerm.comment.formatNeo4jPropertyValue())
+                .replace("URL",resolveUrL(oboTerm.id))
             return Neo4jConnectionService.executeCypherCommand(merge)
     }
+
+    private fun resolveUrL(goId: String):String =
+        GO_URL_TEMPLATE.replace("GO_ID", goId).formatNeo4jPropertyValue()
 
     /*
     Function to create a placeholder GoTerm which allows inter-GoTerm
     relationships to be defined before the target GoTerm is fully loaded
      */
-    fun createPlaceholderOboTerm(newId: String):String {
+    fun createPlaceholderOboTerm(newId: String, description: String):String {
         Neo4jConnectionService.executeCypherCommand(
             "MERGE (got:OboTerm{obo_id: " +
                     " ${newId.formatNeo4jPropertyValue()}})  RETURN got.obo_id"
@@ -51,6 +58,7 @@ object GoTermDao {
         val nodeId = NodeIdentifier("OboTerm", "obo_id",
             newId,
             "GoTerm")
+        Neo4jUtils.addLabelToNode(nodeId)
         return newId
     }
 

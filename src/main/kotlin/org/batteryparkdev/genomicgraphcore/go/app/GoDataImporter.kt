@@ -1,6 +1,8 @@
 package org.batteryparkdev.genomicgraphcore.go.app
 
 import kotlinx.coroutines.*
+import org.batteryparkdev.genomicgraphcore.common.datamining.FtpClient
+import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 import org.batteryparkdev.genomicgraphcore.common.service.Neo4jPropertiesService
 import org.batteryparkdev.genomicgraphcore.go.GoTermLoader
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
@@ -73,18 +75,23 @@ class GoDataImporter(private val goFilename:String): CoroutineScope {
 }
 
 fun main(args: Array<String>): Unit = runBlocking {
-    val filename = if (args.isNotEmpty()) args[0] else "./data/go/sample_go.obo"
-    val loader = GoDataImporter(filename)
-    val database = Neo4jPropertiesService.neo4jDatabase
-    if (Neo4jConnectionService.isTestingContext()) {
-        println("WARNING: Invoking this application will delete all Gene Ontology data from the ${database} database")
-        println("There will be a 20 second delay period to cancel this execution (CTRL-C) if this is not your intent")
-       // Thread.sleep(20_000L)
-        loader.deleteGoNodes()
+    val tempFilename = "/tmp/obo.obo"
+    val result = FtpClient.retrieveRemoteFileByFtpUrl(FilesPropertyService.geneontologyDownloadUrl, tempFilename)
+    if (result.isRight()) {
+        val loader = GoDataImporter(tempFilename)
+        val database = Neo4jPropertiesService.neo4jDatabase
+        if (Neo4jConnectionService.isTestingContext()) {
+            println("WARNING: Invoking this application will delete all Gene Ontology data from the ${database} database")
+            println("There will be a 20 second delay period to cancel this execution (CTRL-C) if this is not your intent")
+           // Thread.sleep(20_000L)
+            loader.deleteGoNodes()
+        }
+        println("Gene Ontology data will now be loaded from: $tempFilename  into the ${database} Neo4j database")
+        defineGoDatabaseConstraints()
+        loader.loadData()
+        println("Gene Ontology data has been loaded into Neo4j")
+    } else {
+        result.tapLeft {  e -> println(e.message) }
     }
-    println("Gene Ontology data will now be loaded from: $filename into the ${database} Neo4j database")
-    defineGoDatabaseConstraints()
-    loader.loadData()
-    println("Gene Ontology data has been loaded into Neo4j")
     awaitCancellation()
 }

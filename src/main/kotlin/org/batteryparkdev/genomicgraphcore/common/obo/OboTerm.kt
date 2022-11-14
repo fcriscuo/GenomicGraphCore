@@ -10,6 +10,7 @@ import java.util.*
 data class OboTerm(
     val id: String, val namespace: String, val name: String,
     val definition: String,
+    val comment: String ,
     val isObsolete: Boolean,
     val pubmedIdList: List<Int>,
     val synonyms: List<OboSynonym>,
@@ -32,12 +33,14 @@ data class OboTerm(
             var name: String = ""
             var namespace: String = ""
             var definition: String = ""
+            var comment = ""
             var obsolete = false
             termlines.forEach { line ->
                 run {
                     when (line.resolveFirstWord()) {
                         "id" -> id = line.substring(line.indexOf("GO:"))
                         "name" -> name = line.substring(6)
+                        "comment" -> comment = line.substring(9)
                         "namespace" -> namespace = line.substring(11)
                         "def" -> definition = line.resolveQuotedString()
                         "is_obsolete" -> obsolete = resolveIsObsoleteBoolean(line)
@@ -47,7 +50,7 @@ data class OboTerm(
             }
 
             return OboTerm(
-                id, namespace, name, definition,
+                id, namespace, name, definition, comment,
                 obsolete,
                 resolvePubMedIdentifiers(id, termlines), OboSynonym.resolveSynonyms(termlines),
                 OboRelationship.resolveRelationships(termlines), OboXref.resolveXrefs(termlines)
@@ -83,6 +86,7 @@ data class OboTerm(
         }
     }
 }
+
 
 data class OboSynonym(
     val synonymText: String,
