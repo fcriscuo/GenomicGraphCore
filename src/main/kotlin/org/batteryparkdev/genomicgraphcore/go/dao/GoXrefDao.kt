@@ -3,6 +3,7 @@ package org.batteryparkdev.genomicgraphcore.go.dao
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
 import org.batteryparkdev.genomicgraphcore.common.obo.OboXref
+import org.batteryparkdev.genomicgraphcore.common.service.XrefUrlPropertyService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 
 /*
@@ -38,7 +39,10 @@ object GoXrefDao {
           "CALL apoc.merge.node(['GoXref','Xref'], {xref_key: ${xref.xrefKey.formatNeo4jPropertyValue()}}, " +
                   "{ source: ${xref.source.formatNeo4jPropertyValue()}," +
                   " xref_id: ${xref.id.formatNeo4jPropertyValue()}, " +
-                  " description: ${xref.description.formatNeo4jPropertyValue()} ," +
+                  " description: ${xref.description.formatNeo4jPropertyValue()}, " +
+                  " url: ${
+                      XrefUrlPropertyService.resolveXrefUrl(xref.source,
+                      xref.id).formatNeo4jPropertyValue()}, " +
                   " created: datetime()}, " +
                   " { last_mod: datetime()}) YIELD node AS xref " +
                   " MATCH (xrefcoll: GoXrefCollection {obo_id: ${oboId.formatNeo4jPropertyValue()}}) " +

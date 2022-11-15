@@ -17,16 +17,18 @@ object GoRelationshipDao {
         "MATCH (got1:OboTerm), (got2:OboTerm) WHERE " +
                 "got1.obo_id = SOURCE  AND got2.obo_id = TARGET " +
                 " MERGE (got1) - [r:RELATIONSHIP] -> (got2) " +
-                " ON CREATE SET " +
-                " r+= {description: DESCRIPTION}" +
                 " RETURN r"
 
     @OptIn(ExperimentalStdlibApi::class)
     private fun loadOboTermRelationship(goId: String, goRel: OboRelationship) {
+        val relType = when (goRel.type == "relationship") {
+            true -> goRel.qualifier.uppercase()
+            false -> goRel.type.uppercase()
+        }
         val cypher = relationshipCypher.replace("SOURCE", goId.formatNeo4jPropertyValue())
             .replace("TARGET", goRel.targetId.formatNeo4jPropertyValue())
-            .replace("RELATIONSHIP", goRel.type.uppercase())
-            .replace("DESCRIPTION", goRel.description.formatNeo4jPropertyValue())
+            .replace("RELATIONSHIP", relType)
+         //   .replace("REL_TYPE", goRel.type)
         Neo4jConnectionService.executeCypherCommand(cypher)
     }
 
@@ -41,7 +43,7 @@ object GoRelationshipDao {
             .forEach {rel ->
             run {
                 if (Neo4jUtils.nodeExistsPredicate( NodeIdentifier("OboTerm", "obo_id", rel.targetId)).not()) {
-                    GoTermDao.createPlaceholderOboTerm(rel.targetId,rel.description)
+                    GoTermDao.createPlaceholderOboTerm(rel.targetId,rel.description, oboTerm.namespace)
                 }
                 loadOboTermRelationship(goId, rel)
             }

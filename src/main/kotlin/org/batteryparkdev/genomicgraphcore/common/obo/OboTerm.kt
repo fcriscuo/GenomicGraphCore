@@ -4,7 +4,6 @@ import org.batteryparkdev.genomicgraphcore.common.parseIntegerValue
 import org.batteryparkdev.genomicgraphcore.common.resolveFirstWord
 import org.batteryparkdev.genomicgraphcore.common.resolveQuotedString
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
-import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
 import java.util.*
 
 data class OboTerm(
@@ -135,8 +134,8 @@ data class OboRelationship(
             val type = line.resolveFirstWord()
             val targetStart = line.indexOf("GO:")
             val targetId = line.substring(targetStart, targetStart + 10)
-            val description = line.substring(targetStart + 13)
-            return OboRelationship(type, resolveQualifier(line), targetId, description)
+            val name = line.substring(targetStart + 13)
+            return OboRelationship(type, resolveQualifier(line), targetId, name)
         }
 
         private fun resolveQualifier(line: String): String {
