@@ -10,10 +10,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
 import org.batteryparkdev.genomicgraphcore.common.obo.OboTermSupplier
-import org.batteryparkdev.genomicgraphcore.go.dao.GoRelationshipDao
-import org.batteryparkdev.genomicgraphcore.go.dao.GoSynonymDao
-import org.batteryparkdev.genomicgraphcore.go.dao.GoTermDao
-import org.batteryparkdev.genomicgraphcore.go.dao.GoXrefDao
+import org.batteryparkdev.genomicgraphcore.common.obo.dao.OboTermDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
@@ -64,31 +61,17 @@ object GoTermLoader {
     Persist the OboTerm node
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun CoroutineScope.persistOboTermNode(OboTerms: ReceiveChannel<OboTerm>) =
+    private fun CoroutineScope.persistOboTermNode(oboTerms: ReceiveChannel<OboTerm>) =
         produce<OboTerm> {
-            for (OboTerm in OboTerms) {
-                if (OboTerm.isValid()) {
-                    GoTermDao.loadGoTermNode(OboTerm)
-                    send(OboTerm)
+            for (oboTerm in oboTerms) {
+                if (oboTerm.isValid()) {
+                    OboTermDao("gene_ontology", listOf("GoTerm", oboTerm.namespace)).persistOboTerm(oboTerm)
+                    send(oboTerm)
                     delay(30)
                 }
             }
         }
 
-    /*
-    Persist the GO Term's synonyms
-     */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun CoroutineScope.persistOboTermSynonyms(OboTerms: ReceiveChannel<OboTerm>) =
-        produce<OboTerm> {
-            for (OboTerm in OboTerms) {
-                if (OboTerm.synonyms.isNotEmpty()) {
-                    GoSynonymDao.persistGoSynonymData(OboTerm)
-                }
-                send(OboTerm)
-                delay(10)
-            }
-        }
 
     /*
     Create Publication placeholder nodes for this GO Term's PubMed entries
@@ -115,54 +98,21 @@ object GoTermLoader {
             ), "HAS_PUBLICATION"
         )
 
-
-    /*
-    Persist the GO Term's Xrefs
-     */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun CoroutineScope.persistOboTermXrefs(oboTerms: ReceiveChannel<OboTerm>) =
-        produce<OboTerm> {
-            for (oboTerm in oboTerms) {
-                GoXrefDao.persistXrefs(oboTerm)
-                send(oboTerm)
-                delay(20)
-            }
-        }
-
-    /*
-    Persist the GO Term's relationships to other GO Terms
-     */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private fun CoroutineScope.persistOboTermRelationships(oboTerms: ReceiveChannel<OboTerm>) =
-        produce<String> {
-            for (oboTerm in oboTerms) {
-                if (oboTerm.relationshipList.isNotEmpty()) {
-                    GoRelationshipDao.loadOboTermRelationships(oboTerm)
-                }
-                send(oboTerm.id)
-                delay(10)
-            }
-        }
-
     /*
     Public function to persist GO Terms into the Neo4j database
      */
     fun loadGoTerms(filename: String) = runBlocking {
         var nodeCount = 0
         val stopwatch = Stopwatch.createStarted()
-        val goIds = persistOboTermRelationships(
-            persistOboTermXrefs(
-                persistGoTermPublications(
-                    persistOboTermSynonyms(
-                        persistOboTermNode(
-                            filterOboTerms(
-                                supplyOboTerms(filename)
-                            )
-                        )
+        val goIds =
+            persistGoTermPublications(
+
+                persistOboTermNode(
+                    filterOboTerms(
+                        supplyOboTerms(filename)
                     )
                 )
             )
-        )
 
         for (goId in goIds) {
             nodeCount += 1

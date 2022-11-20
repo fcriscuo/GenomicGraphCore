@@ -14,6 +14,9 @@ fun String.formatNeo4jPropertyValue(): String {
     }
 }
 
+fun validIntRange(startIndex: Int, endIndex: Int):Boolean =
+    startIndex >= 0 && endIndex >0 && endIndex > startIndex
+
 /*
 Specialized function that encapsulates all members of a delimited String
 Necessary for delimited Strings that may contain numeric values

@@ -1,4 +1,4 @@
-package org.batteryparkdev.genomicgraphcore.go.dao
+package org.batteryparkdev.genomicgraphcore.common.obo.dao
 
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.obo.OboRelationship
@@ -10,26 +10,25 @@ import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
 /*
 Responsible for creating and managing neo4j labeled relationships between
 OboTerm nodes
- */
-object GoRelationshipDao {
 
-    private const val relationshipCypher =
-        "MATCH (got1:OboTerm), (got2:OboTerm) WHERE " +
-                "got1.obo_id = SOURCE  AND got2.obo_id = TARGET " +
-                " MERGE (got1) - [r:RELATIONSHIP] -> (got2) " +
-                " RETURN r"
+OboTerm -[HAS_OBO_RELATIONSHIP] -> OboRelationship
+ */
+object OboRelationshipDao {
 
     @OptIn(ExperimentalStdlibApi::class)
-    private fun loadOboTermRelationship(goId: String, goRel: OboRelationship) {
-        val relType = when (goRel.type == "relationship") {
-            true -> goRel.qualifier.uppercase()
-            false -> goRel.type.uppercase()
+    private fun loadOboTermRelationship(goId: String, oboRel: OboRelationship) {
+        val relType = when (oboRel.type == "relationship") {
+            true -> oboRel.qualifier.uppercase()
+            false -> oboRel.type.uppercase()
         }
-        val cypher = relationshipCypher.replace("SOURCE", goId.formatNeo4jPropertyValue())
-            .replace("TARGET", goRel.targetId.formatNeo4jPropertyValue())
-            .replace("RELATIONSHIP", relType)
-         //   .replace("REL_TYPE", goRel.type)
-        Neo4jConnectionService.executeCypherCommand(cypher)
+
+        Neo4jConnectionService.executeCypherCommand(
+            "MATCH (got1:OboTerm), (got2:OboTerm) WHERE " +
+                    " got1.obo_id = ${goId.formatNeo4jPropertyValue()}  " +
+                    " AND got2.obo_id = ${oboRel.targetId.formatNeo4jPropertyValue()} " +
+                    " MERGE (got1) - [r:HAS_OBO_RELATIONSHIP] -> (got2) " +
+                    " RETURN r"
+        )
     }
 
     /*
@@ -37,13 +36,13 @@ object GoRelationshipDao {
     A placeholder OboTerm node is created for the relationship target node if that term
     has not been loaded yet
      */
-    fun loadOboTermRelationships(oboTerm: OboTerm) {
+    fun persistOboTermRelationships(oboTerm: OboTerm) {
         val goId = oboTerm.id
         oboTerm.relationshipList
             .forEach {rel ->
             run {
                 if (Neo4jUtils.nodeExistsPredicate( NodeIdentifier("OboTerm", "obo_id", rel.targetId)).not()) {
-                    GoTermDao.createPlaceholderOboTerm(rel.targetId,rel.description, oboTerm.namespace)
+                    createPlaceholderOboTerm(rel.targetId,rel.description, oboTerm.namespace)
                 }
                 loadOboTermRelationship(goId, rel)
             }

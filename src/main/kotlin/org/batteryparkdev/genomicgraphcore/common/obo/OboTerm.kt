@@ -3,6 +3,7 @@ package org.batteryparkdev.genomicgraphcore.common.obo
 import org.batteryparkdev.genomicgraphcore.common.parseIntegerValue
 import org.batteryparkdev.genomicgraphcore.common.resolveFirstWord
 import org.batteryparkdev.genomicgraphcore.common.resolveQuotedString
+import org.batteryparkdev.genomicgraphcore.common.validIntRange
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import java.util.*
 
@@ -20,8 +21,6 @@ data class OboTerm(
     val nodeIdentifier = NodeIdentifier("OboTerm","obo_id", id.toString())
     fun isValid(): Boolean =
         (id.isNotBlank().and(name.isNotBlank().and(namespace.isNotBlank())))
-
-
 
     companion object {
         /*
@@ -86,7 +85,6 @@ data class OboTerm(
     }
 }
 
-
 data class OboSynonym(
     val synonymText: String,
     val synonymType: String
@@ -103,7 +101,10 @@ data class OboSynonym(
             val text = line.resolveQuotedString()
             val startIndex = line.lastIndexOf('"') + 2
             val endIndex = startIndex + line.substring(startIndex).indexOf(' ')
-            val type = line.substring(startIndex, endIndex)
+            val type = when (validIntRange(startIndex, endIndex)) {
+                true -> line.substring(startIndex, endIndex)
+                false -> ""
+            }
             return OboSynonym(text, type)
         }
     }
