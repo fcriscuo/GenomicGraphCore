@@ -71,8 +71,7 @@ object GoTermLoader {
                 }
             }
         }
-
-
+    
     /*
     Create Publication placeholder nodes for this GO Term's PubMed entries
      */
@@ -106,7 +105,6 @@ object GoTermLoader {
         val stopwatch = Stopwatch.createStarted()
         val goIds =
             persistGoTermPublications(
-
                 persistOboTermNode(
                     filterOboTerms(
                         supplyOboTerms(filename)

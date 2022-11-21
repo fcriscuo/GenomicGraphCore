@@ -25,6 +25,7 @@ class OboTermDao(private val ontology: String, private val labels: List<String>)
         if(oboTerm.relationshipList.isNotEmpty()){
             OboRelationshipDao.persistOboTermRelationships(oboTerm)
         }
+        println ("Loaded OboTerm id: ${oboTerm.id}")
     }
 
     @OptIn(ExperimentalStdlibApi::class)
