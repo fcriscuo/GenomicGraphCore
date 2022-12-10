@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.batteryparkdev</groupId>
-    <artifactId>genomicgraphcore</artifactId>
+    <artifactId>GenomicGraphicCore</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>

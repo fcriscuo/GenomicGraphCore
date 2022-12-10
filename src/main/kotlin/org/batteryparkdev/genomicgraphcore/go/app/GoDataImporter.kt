@@ -77,6 +77,7 @@ class GoDataImporter(private val goFilename:String): CoroutineScope {
 fun main(args: Array<String>): Unit = runBlocking {
     val tempFilename = "/tmp/obo.obo"
     val result = FtpClient.retrieveRemoteFileByFtpUrl(FilesPropertyService.geneontologyDownloadUrl, tempFilename)
+
     if (result.isRight()) {
         val loader = GoDataImporter(tempFilename)
         val database = Neo4jPropertiesService.neo4jDatabase

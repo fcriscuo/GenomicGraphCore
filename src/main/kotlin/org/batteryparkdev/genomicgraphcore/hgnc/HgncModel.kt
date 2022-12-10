@@ -13,7 +13,7 @@ import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 Represents the data used to define an HGNC node in the Neo4j database
  */
 
-data class HgncModel(
+data class HgncModel private constructor(
     val hgncId: String, val geneName: String, val geneSymbol: String,
     val locusGroup: String, val locusType: String, val status: String,
     val location: String, val locationSortable: String, val aliasSymbol: String,

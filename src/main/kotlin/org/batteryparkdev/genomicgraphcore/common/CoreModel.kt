@@ -29,6 +29,7 @@ interface CoreModel {
 
     /*
 Function to generate Cypher commands to create a
+
 GeneMutationCollection - [HAS_MUTATION] -> specific Mutation relationship
 n.b. It's possible to establish >1 gene-mutation relationship in the same Cypher transaction,
  so the relationship name must be unique

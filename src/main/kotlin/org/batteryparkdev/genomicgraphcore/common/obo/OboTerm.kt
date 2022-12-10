@@ -15,12 +15,13 @@ data class OboTerm(
     val pubmedIdList: List<Int>,
     val synonyms: List<OboSynonym>,
     val relationshipList: List<OboRelationship>,
-    val xrefList: List<OboXref>
+    val xrefList: List<OboXref>,
+    val altId: List<String>
 ) {
 
     val nodeIdentifier = NodeIdentifier("OboTerm","obo_id", id.toString())
     fun isValid(): Boolean =
-        (id.isNotBlank().and(name.isNotBlank().and(namespace.isNotBlank())))
+        (id.isNotBlank().and(name.isNotBlank().and(definition.isNotBlank())))
 
     companion object {
         /*
@@ -36,10 +37,10 @@ data class OboTerm(
             termlines.forEach { line ->
                 run {
                     when (line.resolveFirstWord()) {
-                        "id" -> id = line.substring(line.indexOf("GO:"))
-                        "name" -> name = line.substring(6)
-                        "comment" -> comment = line.substring(9)
-                        "namespace" -> namespace = line.substring(11)
+                        "id" -> id = line.replace("id: ","").trim()
+                        "name" -> name = line.replace("name: ","").trim()
+                        "comment" -> comment = line.replace("comment: ","").trim()
+                        "namespace" -> namespace = line.replace("namespace: ","").trim()
                         "def" -> definition = line.resolveQuotedString()
                         "is_obsolete" -> obsolete = resolveIsObsoleteBoolean(line)
                         else -> {}  // ignore other lines
@@ -51,12 +52,21 @@ data class OboTerm(
                 id, namespace, name, definition, comment,
                 obsolete,
                 resolvePubMedIdentifiers(id, termlines), OboSynonym.resolveSynonyms(termlines),
-                OboRelationship.resolveRelationships(termlines), OboXref.resolveXrefs(termlines)
+                OboRelationship.resolveRelationships(termlines), OboXref.resolveXrefs(termlines),
+                resolveAltIdSet(termlines)
             )
         }
 
         @OptIn(ExperimentalStdlibApi::class)
         private fun resolveIsObsoleteBoolean(line: String): Boolean = line.lowercase().contains("true")
+
+
+        private fun resolveAltIdSet(termlines: List<String>): List<String> {
+            val altIdSet = mutableSetOf<String>()
+            termlines.stream().filter{ it.resolveFirstWord() == "alt_id:"}
+                .forEach { altIdSet.add(it.replace("alt_id: ","").trim() ) }
+            return altIdSet.toList()
+        }
 
         /*
     Function to resolve a List of PubMed Ids from an OBO line

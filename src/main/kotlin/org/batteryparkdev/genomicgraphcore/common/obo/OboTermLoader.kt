@@ -1,4 +1,4 @@
-package org.batteryparkdev.genomicgraphcore.go
+package org.batteryparkdev.genomicgraphcore.common.obo
 
 import arrow.core.Either
 import com.google.common.base.Stopwatch
@@ -8,18 +8,17 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTermSupplier
 import org.batteryparkdev.genomicgraphcore.common.obo.dao.OboTermDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
 
 /*
-Responsible for loading Gene Ontology nodes and relationships into
+Responsible for loading OboTerm nodes and relationships into
 the Neo4j database
  */
-object GoTermLoader {
+class OboTermLoader (val filename:String, val ontology: String, private val labelList:List<String>){
+
     /*
     Generate a stream of GO terms from the supplied OBO file
      */
@@ -47,11 +46,11 @@ object GoTermLoader {
     fun CoroutineScope.filterOboTerms(OboTerms: ReceiveChannel<OboTerm>) =
         produce<OboTerm> {
             for (OboTerm in OboTerms) {
-                if (OboTerm.definition.uppercase().contains("OBSOLETE").not()) {
+                if (OboTerm.isObsolete.not()) {
                     send(OboTerm)
                     delay(10)
                 } else {
-                    println("+++++GO term: ${OboTerm.id} has been marked obsolete and will be skipped")
+                    println("+++++Obo term: ${OboTerm.id} has been marked obsolete and will be skipped")
                 }
             }
         }
@@ -64,7 +63,7 @@ object GoTermLoader {
         produce<OboTerm> {
             for (oboTerm in oboTerms) {
                 if (oboTerm.isValid()) {
-                    OboTermDao("gene_ontology", listOf("GoTerm", oboTerm.namespace)).persistOboTerm(oboTerm)
+                    OboTermDao(ontology, labelList).persistOboTerm(oboTerm)
                     send(oboTerm)
                     delay(30)
                 }
@@ -72,16 +71,15 @@ object GoTermLoader {
         }
 
     /*
-    Create Publication placeholder nodes for this GO Term's PubMed entries
+    Create Publication placeholder nodes for this OboTerms PubMed entries
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun CoroutineScope.persistGoTermPublications(oboTerms: ReceiveChannel<OboTerm>) =
+    private fun CoroutineScope.persistOboTermPublications(oboTerms: ReceiveChannel<OboTerm>) =
         produce<OboTerm> {
             for (oboTerm in oboTerms) {
                 oboTerm.pubmedIdList
                     .map { pmid -> createPublicationRelationshipDefinition(pmid, oboTerm) }
                     .forEach { relDef ->
-                        // GoPubMedDao.loadGoPublication(it)
                         NodeIdentifierDao.defineRelationship(relDef)
                     }
                 send(oboTerm)
@@ -97,13 +95,13 @@ object GoTermLoader {
         )
 
     /*
-    Public function to persist GO Terms into the Neo4j database
+    Public function to persist OboTerms into the Neo4j database
      */
-    fun loadGoTerms(filename: String) = runBlocking {
+    fun loadOboTerms() = runBlocking {
         var nodeCount = 0
         val stopwatch = Stopwatch.createStarted()
         val goIds =
-            persistGoTermPublications(
+            persistOboTermPublications(
                 persistOboTermNode(
                     filterOboTerms(
                         supplyOboTerms(filename)
@@ -115,7 +113,7 @@ object GoTermLoader {
             nodeCount += 1
         }
         println(
-            "Gene Ontology data loaded " +
+            "$ontology data loaded " +
                     " $nodeCount nodes in " +
                     " ${stopwatch.elapsed(java.util.concurrent.TimeUnit.SECONDS)} seconds"
         )

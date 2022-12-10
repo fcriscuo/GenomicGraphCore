@@ -1,4 +1,4 @@
-package org.batteryparkdev.genomicgraphcore.go.app
+package org.batteryparkdev.genomicgraphcore
 
 import org.batteryparkdev.genomicgraphcore.neo4j.service.defineConstraints
 
