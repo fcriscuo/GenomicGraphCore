@@ -10,7 +10,7 @@ import java.util.*
 data class OboTerm(
     val id: String, val namespace: String, val name: String,
     val definition: String,
-    val comment: String ,
+    val comment: String,
     val isObsolete: Boolean,
     val pubmedIdList: List<Int>,
     val synonyms: List<OboSynonym>,
@@ -19,7 +19,7 @@ data class OboTerm(
     val altId: List<String>
 ) {
 
-    val nodeIdentifier = NodeIdentifier("OboTerm","obo_id", id.toString())
+    val nodeIdentifier = NodeIdentifier("OboTerm", "obo_id", id.toString())
     fun isValid(): Boolean =
         (id.isNotBlank().and(name.isNotBlank().and(definition.isNotBlank())))
 
@@ -37,10 +37,10 @@ data class OboTerm(
             termlines.forEach { line ->
                 run {
                     when (line.resolveFirstWord()) {
-                        "id" -> id = line.replace("id: ","").trim()
-                        "name" -> name = line.replace("name: ","").trim()
-                        "comment" -> comment = line.replace("comment: ","").trim()
-                        "namespace" -> namespace = line.replace("namespace: ","").trim()
+                        "id" -> id = line.replace("id: ", "").trim()
+                        "name" -> name = line.replace("name: ", "").trim()
+                        "comment" -> comment = line.replace("comment: ", "").trim()
+                        "namespace" -> namespace = line.replace("namespace: ", "").trim()
                         "def" -> definition = line.resolveQuotedString()
                         "is_obsolete" -> obsolete = resolveIsObsoleteBoolean(line)
                         else -> {}  // ignore other lines
@@ -63,8 +63,8 @@ data class OboTerm(
 
         private fun resolveAltIdSet(termlines: List<String>): List<String> {
             val altIdSet = mutableSetOf<String>()
-            termlines.stream().filter{ it.resolveFirstWord() == "alt_id:"}
-                .forEach { altIdSet.add(it.replace("alt_id: ","").trim() ) }
+            termlines.stream().filter { it.resolveFirstWord() == "alt_id:" }
+                .forEach { altIdSet.add(it.replace("alt_id: ", "").trim()) }
             return altIdSet.toList()
         }
 
@@ -74,7 +74,7 @@ data class OboTerm(
     OBO Term
     Format is PMID:7722643
      */
-         fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<Int> {
+        fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<Int> {
             val pmidSet = mutableSetOf<Int>()
             val pmidLabel = "PMID"
             lines.stream().filter { line -> line.contains(pmidLabel) }
@@ -126,8 +126,9 @@ data class OboRelationship(
     val targetId: String,
     val description: String
 ) {
-    companion object {
+    fun isValid(): Boolean = type.isNotEmpty().and(targetId.isNotEmpty())
 
+    companion object {
         private fun relationshipFilter(line: String): Boolean =
             when (line.resolveFirstWord()) {
                 "is_a", "intersection_of", "relationship" -> true
@@ -138,21 +139,23 @@ data class OboRelationship(
             val relationships = mutableListOf<OboRelationship>()
             termlines.filter { line -> relationshipFilter(line) }
                 .forEach { line -> relationships.add(resolveRelationship(line)) }
-            return relationships
+            return relationships.toList()
         }
 
-        private fun resolveRelationship(line: String): OboRelationship {
-            val type = line.resolveFirstWord()
-            val targetStart = line.indexOf("GO:")
-            val targetId = line.substring(targetStart, targetStart + 10)
-            val name = line.substring(targetStart + 13)
-            return OboRelationship(type, resolveQualifier(line), targetId, name)
-        }
+        private fun resolveRelationship(line: String): OboRelationship =
+            when (line.resolveFirstWord()) {
+                "is_a" -> parseRelationshipType(line,"IS_A")
+                "intersection_of" -> parseRelationshipType(line,"INTERSECTS")
+                "relationship" ->  parseRelationshipType(line,"HAS_RELATIONSHIP")
+                else -> OboRelationship("", "", "","") // invalid representation
+            }
 
-        private fun resolveQualifier(line: String): String {
-            val colonIndex = line.indexOf(":") + 2
-            val goIndex = line.indexOf("GO:")
-            return line.substring(colonIndex, goIndex).trim()
+        private fun parseRelationshipType(line: String, type:String):OboRelationship {
+            val subList = line.substring(line.indexOf(": ")+1, line.indexOf('!')-1).split(' ')
+            val targetId = subList.last()
+            val description = line.substring(line.indexOf('!')+2)
+            val qualifier = if (subList.size > 1) subList.first() else ""
+            return OboRelationship(type, qualifier, targetId, description)
         }
     }
 }
@@ -161,7 +164,7 @@ data class OboXref(
     val source: String,
     val id: String,
     val description: String = "",
-    val xrefKey:String = UUID.randomUUID().toString()
+    val xrefKey: String = UUID.randomUUID().toString()
 ) {
     companion object {
         fun resolveXrefs(termLines: List<String>): List<OboXref> {

@@ -28,7 +28,7 @@ class GeneOntologyApp( val goFilename: String) {
 }
 
 fun main(args: Array<String>): Unit {
-    val tempFilename = "/tmp/obo.obo"
+    val tempFilename = "/tmp/gene_ontology.obo"
     val result = FtpClient.retrieveRemoteFileByFtpUrl(FilesPropertyService.geneontologyDownloadUrl, tempFilename)
     if (result.isRight()) {
         val app = GeneOntologyApp(tempFilename)

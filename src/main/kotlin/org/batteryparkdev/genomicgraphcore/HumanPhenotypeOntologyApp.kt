@@ -35,7 +35,7 @@ fun main(args: Array<String>): Unit {
         if (Neo4jConnectionService.isTestingContext()) {
             println("WARNING: Invoking this application will delete all Ontology data from the $database database")
             println("There will be a 20 second delay period to cancel this execution (CTRL-C) if this is not your intent")
-            Thread.sleep(20_000L)
+           // Thread.sleep(20_000L)
             app.deleteGoNodes()
         }
         println("Human Phenotype Ontology data will now be loaded from: $tempFilename  into the $database Neo4j database")

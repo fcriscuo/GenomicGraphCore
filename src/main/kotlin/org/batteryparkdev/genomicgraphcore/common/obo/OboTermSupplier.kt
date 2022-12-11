@@ -69,7 +69,7 @@ fun main(args: Array<String>) {
               val OboTerm = result.value
               //println("OboTerm:  ${OboTerm.id}  ${OboTerm.namespace}  ${OboTerm.name}  ${OboTerm.synonyms}")
               OboTerm.relationshipList.forEach { rel ->
-                  println("   Relationship:  ${rel.type}  ${rel.qualifier} ${rel.targetId}   ${rel.description}") }
+                  println("   Relationship:  ${rel.type}  ${rel.qualifier} ${rel.targetId}  ") }
               OboTerm.xrefList.forEach { xref->
                   println("Xref: ${xref.source}  ${xref.id}  ${xref.description}")
               }
