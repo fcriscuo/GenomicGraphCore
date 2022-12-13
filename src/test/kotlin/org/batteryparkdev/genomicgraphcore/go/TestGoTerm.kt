@@ -1,9 +1,9 @@
 package org.batteryparkdev.genomicgraphcore.go
 
-import org.batteryparkdev.genomicgraphcore.common.obo.OboRelationship
-import org.batteryparkdev.genomicgraphcore.common.obo.OboSynonym
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
-import org.batteryparkdev.genomicgraphcore.common.obo.OboXref
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboRelationship
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboSynonym
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboTerm
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboXref
 
 fun main() {
     val synonyms = listOf<String>(

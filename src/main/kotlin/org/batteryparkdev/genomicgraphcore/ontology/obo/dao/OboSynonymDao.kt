@@ -1,8 +1,8 @@
-package org.batteryparkdev.genomicgraphcore.common.obo.dao
+package org.batteryparkdev.genomicgraphcore.ontology.obo.dao
 
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
-import org.batteryparkdev.genomicgraphcore.common.obo.OboSynonym
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboSynonym
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboTerm
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
 

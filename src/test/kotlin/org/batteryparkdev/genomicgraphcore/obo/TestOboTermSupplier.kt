@@ -1,7 +1,7 @@
 package org.batteryparkdev.genomicgraphcore.obo
 
 import arrow.core.Either
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTermSupplier
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboTermSupplier
 
 fun main(args: Array<String>) {
     val filePathName = if (args.isNotEmpty()) args[0] else "./data/go/sample_go.obo"

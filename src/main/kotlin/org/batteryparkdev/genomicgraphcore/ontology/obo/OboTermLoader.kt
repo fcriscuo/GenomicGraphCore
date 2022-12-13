@@ -1,4 +1,4 @@
-package org.batteryparkdev.genomicgraphcore.common.obo
+package org.batteryparkdev.genomicgraphcore.ontology.obo
 
 import arrow.core.Either
 import com.google.common.base.Stopwatch
@@ -8,7 +8,8 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.batteryparkdev.genomicgraphcore.common.obo.dao.OboTermDao
+import org.batteryparkdev.genomicgraphcore.common.service.XrefUrlPropertyService
+import org.batteryparkdev.genomicgraphcore.ontology.obo.dao.OboTermDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
@@ -81,10 +82,18 @@ class OboTermLoader (val filename:String, val ontology: String, private val labe
                     .map { pmid -> createPublicationRelationshipDefinition(pmid, oboTerm) }
                     .forEach { relDef ->
                         NodeIdentifierDao.defineRelationship(relDef)
+                        updatePublicationUrl(relDef.childNode)
                     }
                 send(oboTerm)
             }
         }
+
+    // update the PubMed node with it's NCBU URL
+    private fun  updatePublicationUrl (nodeIdentifier: NodeIdentifier) {
+        val url = XrefUrlPropertyService.resolveXrefUrl("PubMed",nodeIdentifier.idValue)
+        NodeIdentifierDao.updateNodeProperty(nodeIdentifier,"url",url)
+
+    }
 
     private fun createPublicationRelationshipDefinition(pmid: Int, oboTerm: OboTerm): RelationshipDefinition =
         RelationshipDefinition(

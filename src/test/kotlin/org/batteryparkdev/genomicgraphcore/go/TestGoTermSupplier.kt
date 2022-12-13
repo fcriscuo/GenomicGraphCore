@@ -1,7 +1,7 @@
 package org.batteryparkdev.genomicgraphcore.go
 
 import arrow.core.Either
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTermSupplier
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboTermSupplier
 
 /*
 Main function for integration testing

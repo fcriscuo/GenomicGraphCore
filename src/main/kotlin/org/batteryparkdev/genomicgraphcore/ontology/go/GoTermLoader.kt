@@ -1,4 +1,4 @@
-package org.batteryparkdev.genomicgraphcore.go
+package org.batteryparkdev.genomicgraphcore.ontology.go
 
 import arrow.core.Either
 import com.google.common.base.Stopwatch
@@ -8,9 +8,9 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTermSupplier
-import org.batteryparkdev.genomicgraphcore.common.obo.dao.OboTermDao
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboTerm
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboTermSupplier
+import org.batteryparkdev.genomicgraphcore.ontology.obo.dao.OboTermDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition

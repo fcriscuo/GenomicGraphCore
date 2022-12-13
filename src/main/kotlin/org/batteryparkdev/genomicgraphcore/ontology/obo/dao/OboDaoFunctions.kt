@@ -1,4 +1,4 @@
-package org.batteryparkdev.genomicgraphcore.common.obo.dao
+package org.batteryparkdev.genomicgraphcore.ontology.obo.dao
 
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.service.XrefUrlPropertyService

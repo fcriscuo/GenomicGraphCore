@@ -6,11 +6,17 @@ import java.util.*
 Represents a collection of common utility functions used
 throughout the application
  */
+
+/*
+Function that formats a property value fo inclusion in a Neo4j Cypher
+statement. Numeric strings ar returned unquoted unless they have leading 0.
+Alphanumeric strings are returned in quotes
+ */
 fun String.formatNeo4jPropertyValue(): String {
     val tmp = this.removeSurrounding("\"")
   return  when (tmp.toIntOrNull()) {
         null -> "\"$tmp\""
-        else -> tmp
+        else -> if (tmp.startsWith("0")) "\"$tmp\"" else tmp
     }
 }
 

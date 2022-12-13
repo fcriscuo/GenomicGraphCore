@@ -1,8 +1,8 @@
-package org.batteryparkdev.genomicgraphcore.common.obo.dao
+package org.batteryparkdev.genomicgraphcore.ontology.obo.dao
 
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
-import org.batteryparkdev.genomicgraphcore.common.obo.OboRelationship
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboRelationship
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboTerm
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
@@ -16,7 +16,7 @@ OboTerm -[HAS_OBO_RELATIONSHIP] -> OboRelationship
 object OboRelationshipDao {
 
     @OptIn(ExperimentalStdlibApi::class)
-    private fun loadOboTermRelationship(goId: String, oboRel: OboRelationship) {
+    private fun loadOboTermRelationship(oboId: String, oboRel: OboRelationship) {
         val relType = when (oboRel.type == "relationship") {
             true -> oboRel.qualifier.uppercase()
             false -> oboRel.type.uppercase()
@@ -24,9 +24,9 @@ object OboRelationshipDao {
 
         Neo4jConnectionService.executeCypherCommand(
             "MATCH (got1:OboTerm), (got2:OboTerm) WHERE " +
-                    " got1.obo_id = ${goId.formatNeo4jPropertyValue()}  " +
+                    " got1.obo_id = ${oboId.formatNeo4jPropertyValue()}  " +
                     " AND got2.obo_id = ${oboRel.targetId.formatNeo4jPropertyValue()} " +
-                    " MERGE (got1) - [r:HAS_OBO_RELATIONSHIP] -> (got2) " +
+                    " MERGE (got1) - [r:$relType] -> (got2) " +
                     " RETURN r"
         )
     }

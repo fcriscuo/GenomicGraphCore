@@ -1,7 +1,7 @@
-package org.batteryparkdev.genomicgraphcore
+package org.batteryparkdev.genomicgraphcore.ontology.app
 
 import org.batteryparkdev.genomicgraphcore.common.datamining.FtpClient
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTermLoader
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboTermLoader
 import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 import org.batteryparkdev.genomicgraphcore.common.service.Neo4jPropertiesService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService

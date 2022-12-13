@@ -1,8 +1,8 @@
-package org.batteryparkdev.genomicgraphcore.common.obo.dao
+package org.batteryparkdev.genomicgraphcore.ontology.obo.dao
 
 import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
-import org.batteryparkdev.genomicgraphcore.common.obo.OboTerm
-import org.batteryparkdev.genomicgraphcore.common.obo.OboXref
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboTerm
+import org.batteryparkdev.genomicgraphcore.ontology.obo.OboXref
 import org.batteryparkdev.genomicgraphcore.common.service.XrefUrlPropertyService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 
@@ -36,9 +36,7 @@ object OboXrefDao {
                 "{ source: ${xref.source.formatNeo4jPropertyValue()}," +
                 " xref_id: ${xref.id.formatNeo4jPropertyValue()}, " +
                 " description: ${xref.description.formatNeo4jPropertyValue()}, " +
-                " url: ${
-                    XrefUrlPropertyService.resolveXrefUrl(xref.source,
-                        xref.id).formatNeo4jPropertyValue()}, " +
+                " url: ${xref.url.formatNeo4jPropertyValue()}, " +
                 " created: datetime()}, " +
                 " { last_mod: datetime()}) YIELD node AS xref " +
                 " MATCH (xrefcoll: OboXrefCollection {obo_id: ${oboId.formatNeo4jPropertyValue()}}) " +

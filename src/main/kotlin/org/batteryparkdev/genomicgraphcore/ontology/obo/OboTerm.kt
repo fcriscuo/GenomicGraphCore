@@ -1,8 +1,9 @@
-package org.batteryparkdev.genomicgraphcore.common.obo
+package org.batteryparkdev.genomicgraphcore.ontology.obo
 
 import org.batteryparkdev.genomicgraphcore.common.parseIntegerValue
 import org.batteryparkdev.genomicgraphcore.common.resolveFirstWord
 import org.batteryparkdev.genomicgraphcore.common.resolveQuotedString
+import org.batteryparkdev.genomicgraphcore.common.service.XrefUrlPropertyService
 import org.batteryparkdev.genomicgraphcore.common.validIntRange
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import java.util.*
@@ -74,7 +75,7 @@ data class OboTerm(
     OBO Term
     Format is PMID:7722643
      */
-        fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<Int> {
+        private fun resolvePubMedIdentifiers(goId: String, lines: List<String>): List<Int> {
             val pmidSet = mutableSetOf<Int>()
             val pmidLabel = "PMID"
             lines.stream().filter { line -> line.contains(pmidLabel) }
@@ -150,7 +151,7 @@ data class OboRelationship(
                 else -> OboRelationship("", "", "","") // invalid representation
             }
 
-        private fun parseRelationshipType(line: String, type:String):OboRelationship {
+        private fun parseRelationshipType(line: String, type:String): OboRelationship {
             val subList = line.substring(line.indexOf(": ")+1, line.indexOf('!')-1).split(' ')
             val targetId = subList.last()
             val description = line.substring(line.indexOf('!')+2)
@@ -164,6 +165,7 @@ data class OboXref(
     val source: String,
     val id: String,
     val description: String = "",
+    val url: String = "",
     val xrefKey: String = UUID.randomUUID().toString()
 ) {
     companion object {
@@ -178,9 +180,21 @@ data class OboXref(
             val sourceAndId = line.split(" ")[1].split(":")
             val source = sourceAndId[0]
             val id = sourceAndId[1]
-            return OboXref(source, id, line.resolveQuotedString())
+            val url = resolveXrefUrl(line, source, id)
+            return OboXref(source, id, line.resolveQuotedString(), url)
         }
+        /*
+        XrefUrlPropertyService.resolveXrefUrl(xref.source,
+                        xref.id).formatNeo4jPropertyValue()}
+         */
+        private fun resolveXrefUrl(line: String, source: String, id: String): String =
+              when (line.contains("http")) {
+                  true -> line.split(' ')[1]
+                  false ->  XrefUrlPropertyService.resolveXrefUrl(source,
+                      id)
+              }
     }
+
 }
 
 

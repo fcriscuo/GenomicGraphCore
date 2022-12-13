@@ -1,10 +1,9 @@
-package org.batteryparkdev.genomicgraphcore.go.app
+package org.batteryparkdev.genomicgraphcore.ontology.go
 
 import kotlinx.coroutines.*
 import org.batteryparkdev.genomicgraphcore.common.datamining.FtpClient
 import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 import org.batteryparkdev.genomicgraphcore.common.service.Neo4jPropertiesService
-import org.batteryparkdev.genomicgraphcore.go.GoTermLoader
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
 import kotlin.coroutines.CoroutineContext

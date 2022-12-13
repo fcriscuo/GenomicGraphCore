@@ -10,6 +10,7 @@ object XrefUrlPropertyService {
     private  val metacycUrlTemplate = "https://metacyc.org/META/new-image?object=$templateValue"
     private  val rheaUrlTemplate = "https://www.rhea-db.org/rhea/$templateValue"
     private  val wikipediaUrlTemplate = "https://en.wikipedia.org/wiki/$templateValue"
+    private val pubmedUrlTemplate ="https://pubmed.ncbi.nlm.nih.gov/$templateValue"
 
     fun resolveXrefUrl(source: String, id: String): String =
         when (source) {
@@ -20,6 +21,7 @@ object XrefUrlPropertyService {
             "MetaCyc" -> metacycUrlTemplate.replace(templateValue,id)
             "RHEA" -> rheaUrlTemplate.replace(templateValue,id)
             "Wikipedia" -> wikipediaUrlTemplate.replace(templateValue,id)
+            "PubMed" -> pubmedUrlTemplate.replace(templateValue,id)
             else ->""
         }
 }

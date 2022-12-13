@@ -1,4 +1,4 @@
-package org.batteryparkdev.genomicgraphcore.common.obo
+package org.batteryparkdev.genomicgraphcore.ontology.obo
 
 import arrow.core.Either
 import java.io.File
@@ -18,10 +18,10 @@ class OboTermSupplier(filename: String) : Supplier<Either<Exception, OboTerm>> {
    fun hasMoreLines():Boolean = oboScanner.hasNextLine()
 
     override fun get(): Either<Exception, OboTerm> {
-        val OboTerm = generateOboTerm()
-        return when (OboTerm.isValid()) {
-            true -> Either.Right(OboTerm)
-            false -> Either.Left(Exception("EOF"))
+        val oboTerm = generateOboTerm()
+        return when (oboTerm.isValid()) {
+            true -> Either.Right(oboTerm)
+            false -> Either.Left(Exception("Invalid ObTerm: ${oboTerm.id}"))
         }
     }
 
@@ -53,31 +53,6 @@ class OboTermSupplier(filename: String) : Supplier<Either<Exception, OboTerm>> {
         while (line.startsWith(termLabel).not()) {
             line = scanLine()
         }
-    }
-}
-
-/*
-Main function for integration testing
- */
-fun main(args: Array<String>) {
-    val filePathName = if (args.isNotEmpty()) args[0] else "./data/sample_go.obo"
-    println("Processing OBO-formatted file: $filePathName")
-    val supplier = OboTermSupplier(filePathName)
-    for (i in 1..200) {
-      when ( val result = supplier.get()) {
-          is Either.Right -> {
-              val OboTerm = result.value
-              //println("OboTerm:  ${OboTerm.id}  ${OboTerm.namespace}  ${OboTerm.name}  ${OboTerm.synonyms}")
-              OboTerm.relationshipList.forEach { rel ->
-                  println("   Relationship:  ${rel.type}  ${rel.qualifier} ${rel.targetId}  ") }
-              OboTerm.xrefList.forEach { xref->
-                  println("Xref: ${xref.source}  ${xref.id}  ${xref.description}")
-              }
-          }
-          is Either.Left -> {
-              println("Exception: ${result.value.message}")
-          }
-      }
     }
 }
 
