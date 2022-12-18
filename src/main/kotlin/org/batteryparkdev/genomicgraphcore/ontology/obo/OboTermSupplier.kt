@@ -1,58 +1,48 @@
 package org.batteryparkdev.genomicgraphcore.ontology.obo
 
 import arrow.core.Either
+import io.kotlintest.matchers.startWith
+import org.apache.commons.lang3.StringUtils.startsWith
 import java.io.File
 import java.util.*
 import java.util.function.Supplier
 
 /*
-Responsible for parsing complete Gene Ontology Terms from
+Responsible for parsing complete Gene Ontology Terms ([Term]) from
 a specified OBO-formatted file
 Utilizes an intermediate object, Termlines, to accommodate the
-variable number of synonyms and relationships in a GO Term
+variable number of synonyms, xrefs, and relationships in a OBO Term
  */
-class OboTermSupplier(filename: String) : Supplier<Either<Exception, OboTerm>> {
+class OboTermSupplier(filename: String) : Supplier<Either<String, OboTerm>> {
     private val oboScanner = Scanner(File(filename))
     private val termLabel = "[Term]"
+    private val typedefLabel = "[Typedef]"
+    init {
+        // skip OBO header lines to first [Term]
+       while(oboScanner.hasNextLine()){
+          if (oboScanner.nextLine().startsWith(termLabel)) break
+       }
+    }
 
    fun hasMoreLines():Boolean = oboScanner.hasNextLine()
 
-    override fun get(): Either<Exception, OboTerm> {
-        val oboTerm = generateOboTerm()
-        return when (oboTerm.isValid()) {
-            true -> Either.Right(oboTerm)
-            false -> Either.Left(Exception("Invalid ObTerm: ${oboTerm.id}"))
-        }
-    }
+    override fun get(): Either<String, OboTerm> = generateOboTerm()
 
-    private fun scanLine(): String =
-        when  (oboScanner.hasNextLine()) {
-            true -> oboScanner.nextLine()
-            false -> "EOF"
-        }
-
-    private fun generateOboTerm(): OboTerm {
-        advanceToNextTerm()
-        val termlines = collectLines()
-        return OboTerm.generateOboTerm(termlines.getTermlinesContent())
-    }
-
-    private fun collectLines(): Termlines {
+    private fun generateOboTerm(): Either<String,OboTerm> {
         val termlines = Termlines()
-        var line = scanLine()
-        while (line.equals("EOF").not().and(line.isNotBlank())) {
-            termlines.addTermlines(line)
-            line = scanLine()
+        while (oboScanner.hasNextLine()) {
+            val line = oboScanner.nextLine()
+            when  {
+                line.startsWith(termLabel) ->
+                    return Either.Right(OboTerm.generateOboTerm(termlines.getTermlinesContent()))
+                line.startsWith(typedefLabel) ->
+                    return Either.Left("All OBO Terms in have been processed")
+                line.isEmpty() -> continue
+                else -> termlines.addTermlines(line)
+            }
         }
-        return termlines
-    }
-
-    private fun advanceToNextTerm() {
-       var line = " "
-      //  while (line.startsWith(termLabel).not().and(line.isNotBlank())) {
-        while (line.startsWith(termLabel).not()) {
-            line = scanLine()
-        }
+        // should not reach this return statement if file has correct structure
+        return Either.Left("Error: Invalid OBO file structure")
     }
 }
 

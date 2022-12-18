@@ -16,7 +16,6 @@ class GeneOntologyApp( val goFilename: String) {
         "OboSynonym","OboXref","OboXrefCollection")
 
      fun loadGeneOntologyData():String {
-        //GoTermLoader.loadOboTerms(goFilename)
          OboTermLoader(goFilename,ontology,labelList).loadOboTerms()
         return ("Gene Ontology data import task completed")
     }

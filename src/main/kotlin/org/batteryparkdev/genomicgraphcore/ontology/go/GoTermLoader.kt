@@ -34,7 +34,7 @@ object GoTermLoader {
                         delay(10)
                     }
                     is Either.Left -> {
-                        println("Exception: ${result.value.message}")
+                        println("Exception: ${result.value}")
                     }
                 }
             }

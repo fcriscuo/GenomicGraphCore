@@ -34,10 +34,12 @@ class OboTermLoader (val filename:String, val ontology: String, private val labe
                         delay(10)
                     }
                     is Either.Left -> {
-                        println("Exception: ${result.value.message}")
+                        println("Message: ${result.value}")
+                        break  // no more terms to process
                     }
                 }
             }
+            println("OBO file $filename has no more OBO terms")
         }
 
     /*

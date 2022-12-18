@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
                 }
             }
             is Either.Left -> {
-                println("Exception: ${result.value.message}")
+                println("Exception: ${result.value}")
             }
         }
     }

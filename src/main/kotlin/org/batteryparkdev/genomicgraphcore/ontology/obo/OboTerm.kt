@@ -25,8 +25,11 @@ data class OboTerm(
         (id.isNotBlank().and(name.isNotBlank().and(definition.isNotBlank())))
 
     companion object {
+
+        val nodeNameList = listOf<String>("OboTerm","OboSynonymCollection",
+            "OboSynonym","OboXref","OboXrefCollection")
         /*
-        Function to process a list of text lines encompassing a GO Term
+        Function to process a list of text lines encompassing a OBO Term
          */
         fun generateOboTerm(termlines: List<String>): OboTerm {
             var id: String = ""
