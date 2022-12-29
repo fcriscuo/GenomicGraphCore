@@ -27,6 +27,7 @@ fun defineConstraints() {
     }
 }
 
+
 // stand-alone invocation
 fun main(){
     println("Define constraints for ${System.getenv("NEO4J_DATABASE")} database")

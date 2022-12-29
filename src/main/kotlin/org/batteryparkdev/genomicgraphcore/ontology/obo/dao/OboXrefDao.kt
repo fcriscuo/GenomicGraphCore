@@ -13,7 +13,7 @@ OboTerm - [HAS_XREF_COLLECTION] -> OboXrefCollection - [HAS_XREF] -> OboXref
 
 object OboXrefDao {
 
-    fun persistXrefs(obo: OboTerm){
+    fun persistXrefs(obo: OboTerm) {
         if (obo.xrefList.isEmpty().not()) {
             createXrefCollectionNodeAndRelationship(obo.id)
             obo.xrefList.forEach { xref -> createXrefNodeAndCollection(obo.id, xref) }
@@ -31,15 +31,23 @@ object OboXrefDao {
         )
 
     private fun createXrefNodeAndCollection(oboId: String, xref: OboXref) =
-        Neo4jConnectionService.executeCypherCommand( "CALL apoc.merge.node(['OboXref','Xref'], " +
-                " {xref_key: ${xref.xrefKey.formatNeo4jPropertyValue()}}, " +
-                "{ source: ${xref.source.formatNeo4jPropertyValue()}," +
-                " xref_id: ${xref.id.formatNeo4jPropertyValue()}, " +
-                " description: ${xref.description.formatNeo4jPropertyValue()}, " +
-                " url: ${xref.url.formatNeo4jPropertyValue()}, " +
-                " created: datetime()}, " +
-                " { last_mod: datetime()}) YIELD node AS xref " +
-                " MATCH (xrefcoll: OboXrefCollection {obo_id: ${oboId.formatNeo4jPropertyValue()}}) " +
-                " CALL apoc.merge.relationship(xrefcoll, 'HAS_XREF',{}, {}, xref ) " +
-                " YIELD rel RETURN rel \n")
+        Neo4jConnectionService.executeCypherCommand(
+            "CALL apoc.merge.node(['OboXref','Xref'], " +
+                    " {xref_key: ${xref.xrefKey.formatNeo4jPropertyValue()}}, " +
+                    "{ source: ${xref.source.formatNeo4jPropertyValue()}," +
+                    " xref_id: ${xref.id.formatNeo4jPropertyValue()}, " +
+                    formatDescriptionProperty(xref) +
+                    " url: ${xref.url.formatNeo4jPropertyValue()}, " +
+                    " created: datetime()}, " +
+                    " { last_mod: datetime()}) YIELD node AS xref " +
+                    " MATCH (xrefcoll: OboXrefCollection {obo_id: ${oboId.formatNeo4jPropertyValue()}}) " +
+                    " CALL apoc.merge.relationship(xrefcoll, 'HAS_XREF',{}, {}, xref ) " +
+                    " YIELD rel RETURN rel \n"
+        )
+
+    private fun formatDescriptionProperty(xref: OboXref): String =
+        when (xref.description.isNotEmpty()) {
+            true -> "description: ${xref.description.formatNeo4jPropertyValue()},  "
+            false -> ""
+        }
 }
