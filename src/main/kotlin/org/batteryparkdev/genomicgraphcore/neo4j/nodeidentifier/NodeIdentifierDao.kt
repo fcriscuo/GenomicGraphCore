@@ -1,5 +1,6 @@
 package org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier
 
+import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.service.LogService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
@@ -32,6 +33,16 @@ object NodeIdentifierDao {
                 LogService.error("ERROR: RelationshipDefinition is invalid: $relDefinition")
             }
         }
+
+    fun updateNodeProperty(nodeId: NodeIdentifier, property: String, value: String): String =
+        Neo4jConnectionService.executeCypherCommand(
+            "CALL apoc.merge.node(['${nodeId.primaryLabel}'], " +
+                    "{ ${nodeId.idProperty}: ${nodeId.idValue}}, " +
+                    "{}, " +
+                    "{ $property: ${value.formatNeo4jPropertyValue()}, last_mod: datetime()} ) " +
+                    "YIELD node AS ${nodeId.primaryLabel} \n"
+        )
+
 
     /*
        Utility function to delete a specified relationship between two (2)

@@ -45,6 +45,7 @@ fun pubmedNodeExistsPredicate(pubId: String): Boolean =
         )
     )
 
+
 fun referenceNodeExistsPredicate(pubId: String): Boolean =
    publicationNodeExistsPredicate(
         NodeIdentifier(

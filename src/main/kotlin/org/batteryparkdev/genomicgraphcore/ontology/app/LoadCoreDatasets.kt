@@ -1,4 +1,4 @@
-package org.batteryparkdev.genomicgraphcore.app
+package org.batteryparkdev.genomicgraphcore
 
 import com.google.common.base.Stopwatch
 import org.batteryparkdev.genomicgraphcore.common.CoreModelLoader

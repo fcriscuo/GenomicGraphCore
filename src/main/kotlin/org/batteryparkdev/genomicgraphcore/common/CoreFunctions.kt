@@ -6,13 +6,22 @@ import java.util.*
 Represents a collection of common utility functions used
 throughout the application
  */
+
+/*
+Function that formats a property value fo inclusion in a Neo4j Cypher
+statement. Numeric strings ar returned unquoted unless they have leading 0.
+Alphanumeric strings are returned in quotes
+ */
 fun String.formatNeo4jPropertyValue(): String {
     val tmp = this.removeSurrounding("\"")
   return  when (tmp.toIntOrNull()) {
         null -> "\"$tmp\""
-        else -> tmp
+        else -> if (tmp.startsWith("0")) "\"$tmp\"" else tmp
     }
 }
+
+fun validIntRange(startIndex: Int, endIndex: Int):Boolean =
+    startIndex >= 0 && endIndex >0 && endIndex > startIndex
 
 /*
 Specialized function that encapsulates all members of a delimited String
@@ -72,6 +81,37 @@ fun String.parseOnComma(): List<String> = this.parseOnDelimiter(',')
 fun String.parseOnTab(): List<String> = this.parseOnDelimiter('\t')
 
 fun String.parseOnPipe(): List<String> = this.parseOnDelimiter('|')
+
+fun String.parseOnSpace(): List<String> = this.parseOnDelimiter(' ')
+
+fun String.resolveFirstWord():String = this.parseOnSpace().first().replace(":","")
+
+/*
+    Function to resolve the first quoted String in a supplied text
+    Quote marks are not included
+    Used to identify quoted text in GO terms
+    */
+
+fun String.resolveQuotedString():String {
+    val openQuote = this.indexOf('"')
+    val closeQuote = this.lastIndexOf('"')
+    return when (closeQuote > openQuote){
+        true -> this.substring(openQuote+1, closeQuote)
+        false -> ""
+    }
+}
+/*
+parse an integer value embedded in a alphanumeric String (e.g. PMID)
+ */
+fun String.parseIntegerValue (): Int {
+    var id:String =""
+    var index = 0
+    while (index < this.length && this[index] in '0'..'9' ) {
+        id = id.plus(this[index])
+        index +=1
+    }
+    return if (id.length>0) id.toInt() else 0
+}
 
 /*
 Double quotes (i.e. ") inside a text field cause Cypher
@@ -152,3 +192,4 @@ fun formatIntList(intList: String): String =
 
         false -> "[0]"
     }
+

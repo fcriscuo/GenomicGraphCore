@@ -4,9 +4,11 @@
 
 package org.batteryparkdev.genomicgraphcore.neo4j.service
 
+import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.service.LogService
 import org.batteryparkdev.genomicgraphcore.common.service.Neo4jPropertiesService
 import org.neo4j.driver.*
+import java.io.File
 
 /**
  * Responsible for establishing a connection to a local or remote Neo4j database
@@ -50,6 +52,16 @@ object Neo4jConnectionService {
                 tx.run(command)
             }!!
         }
+    }
+    /*
+    Function to execute a specified CQL file
+     */
+
+    fun executeCqlSchemaFile(cqlFile: String): Unit {
+        val file = File(cqlFile)
+       // require(file.exists())
+        require(file.extension == "cql")
+        executeCypherCommand("CALL apoc.cypher.runSchemaFile(${cqlFile.formatNeo4jPropertyValue()})")
     }
 
     /*
