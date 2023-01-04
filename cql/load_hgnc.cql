@@ -50,10 +50,11 @@ hgnc.agr=line.agr,
 hgnc.mane_select=line.mane_select,
 hgnc.gencc=line.gencc,
 hgnc.created=datetime()
-} IN TRANSACTIONS;
+} IN TRANSACTIONS OF 1000 ROWS;
 
 match (h:Hgnc) where h.pubmed_ids <> " "
 unwind h.pubmed_ids AS pubmed_id
 merge (p:Publication{pub_id:toInteger(pubmed_id)})
+SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id))
 merge (h) - [r:HAS_PUBLICATION] -> (p)
 ;
