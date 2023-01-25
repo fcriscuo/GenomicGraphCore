@@ -1,7 +1,6 @@
-:auto CALL {
 LOAD CSV WITH HEADERS FROM
-'file:///Volumes/SSD870/HGNC/hgnc_complete_set.tsv' AS line FIELDTERMINATOR '\t'
-
+'file:///Volumes/SSD870/GenomicCoreData/HGNC/hgnc_complete_set.tsv' AS line FIELDTERMINATOR '\t'
+CALL { WITH line
 MERGE (hgnc:Hgnc {hgnc_id: line.hgnc_id})
 
 SET hgnc.gene_symbol=line.symbol,
@@ -50,7 +49,7 @@ hgnc.agr=line.agr,
 hgnc.mane_select=line.mane_select,
 hgnc.gencc=line.gencc,
 hgnc.created=datetime()
-} IN TRANSACTIONS OF 1000 ROWS;
+} IN TRANSACTIONS OF 2000 ROWS;
 
 match (h:Hgnc) where h.pubmed_ids <> " "
 unwind h.pubmed_ids AS pubmed_id
