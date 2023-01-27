@@ -74,7 +74,7 @@ class GoDataImporter(private val goFilename:String): CoroutineScope {
 }
 
 fun main(args: Array<String>): Unit = runBlocking {
-    val tempFilename = "/tmp/obo.obo"
+    val tempFilename = "/tmp/go.obo"
     val result = FtpClient.retrieveRemoteFileByFtpUrl(FilesPropertyService.geneontologyDownloadUrl, tempFilename)
 
     if (result.isRight()) {

@@ -10,7 +10,9 @@ CREATE CONSTRAINT unique_hgnc_id IF NOT EXISTS FOR (h:Hgnc)  REQUIRE h.hgnc_id I
 CREATE CONSTRAINT unique_pub_id IF NOT EXISTS FOR (p:Publication)  REQUIRE p.pub_id IS UNIQUE;
 CREATE CONSTRAINT unique_uniprot_id IF NOT EXISTS FOR (u:UniProtEntry)  REQUIRE u.entry_id IS UNIQUE;
 CREATE CONSTRAINT unique_nhgri_gene_id IF NOT EXISTS FOR (gene:NHGRI_Gene) REQUIRE gene.gene_symbol IS UNIQUE;
-CREATE CONSTRAINT unique_disgenet_gene_id IF NOT EXISTS FOR (gene:Dosgenet_Gene) REQUIRE gene.gene_id IS UNIQUE;
+CREATE CONSTRAINT unique_disgenet_gene_id IF NOT EXISTS FOR (gene:Disgenet_Gene) REQUIRE gene.gene_id IS UNIQUE;
+CREATE CONSTRAINT unique_disgenet_disease_id IF NOT EXISTS FOR (dis:DisgenetDisease) REQUIRE dis.disease_id IS UNIQUE;
+CREATE CONSTRAINT unique_disgenet_variant_snp_id IF NOT EXISTS FOR (var:DisgenetVariant) REQUIRE var.snp_id IS UNIQUE;
 
 CREATE INDEX hgnc_gene_symbol_index FOR (h:Hgnc) ON h.gene_symbol;
 CREATE INDEX publication_doi_index FOR (p:Publication) ON p.doi_id;
