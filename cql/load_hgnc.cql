@@ -53,7 +53,8 @@ hgnc.created=datetime()
 
 match (h:Hgnc) where h.pubmed_ids <> " "
 unwind h.pubmed_ids AS pubmed_id
-merge (p:Publication{pub_id:toInteger(pubmed_id)})
-SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id))
+merge (p:Publication:PubMed{pub_id:toInteger(pubmed_id)})
+SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),
+p.needs_properties=true, p.needs_references=true
 merge (h) - [r:HAS_PUBLICATION] -> (p)
 ;

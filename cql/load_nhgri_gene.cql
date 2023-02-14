@@ -5,10 +5,9 @@ WITH line
 MERGE (gene:NHGRI_Gene:Gene{gene_symbol: line.GENE})
 
 SET gene.hgnc_id = apoc.text.join(["HGNC",line.`HGNC ID`],':'),
-  gene.nhgri_gene_url = replace("https://research.nhgri.nih.gov/CGD/view/?t=XXX&par=general:gene,conditions:manifestation,intervention:All&g=XXXX","XXXX",
-gene.gene_symbol),
+  gene.nhgri_gene_url = genomiccore.resolveNhgriGeneUrl(line.GENE),
   gene.entrez_id = line.`ENTREZ GENE ID`,
-  gene.entrez_gene_url= replace("https://www.ncbi.nlm.nih.gov/gene/?term=XXXX","XXXX",gene.entrez_id),
+  gene.entrez_gene_url= genomiccore.resolveEntezUrl(gene.entrez_id),
   gene.conditions = split(line.CONDITION,';'),
   gene.inheritance = line.INHERITANCE,
   gene.age_group = line.`AGE GROUP`,
@@ -29,7 +28,8 @@ MERGE (gene)-[r1:HAS_HGNC]->(hgnc)
 //create relationships to Publication nodes
 match (gene:NHGRI_Gene) where gene.pub_ids IS NOT NULL
 unwind gene.pub_ids AS pubmed_id
-merge (p:Publication{pub_id:pubmed_id})
-SET p.url= genomiccore.resolvePubmedUrl(pubmed_id)
+merge (p:Publication:PubMed{pub_id:toInteger(pubmed_id)})
+SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),
+p.needs_properties=true, p.needs_references=true
 merge (gene) - [r2:HAS_PUBLICATION] -> (p)
 ;

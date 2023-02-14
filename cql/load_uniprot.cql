@@ -5,7 +5,7 @@ WITH line
 MERGE (uni:UniProtEntry {entry_id: line.Entry})
 
 SET  uni.entry_name =line.`Entry Name`,
-  uni.uniprot_emtry_url = replace("https://www.uniprot.org/uniprotkb/XXXX/entry","XXXX",uni.entry_id),
+  uni.uniprot_emtry_url = replace('https://www.uniprot.org/uniprotkb/XXXX/entry','XXXX',uni.entry_id),
   uni.protein_names = coalesce(split(line.`Protein names`,';'),' '),
   uni.gene_names = coalesce(split(line.`Gene Names`,' '),' '),
   uni.length = toInteger(line.length),
@@ -27,10 +27,12 @@ MATCH(hgnc:Hgnc{hgnc_id:uni.hgnc_id})
 MERGE (uni) - [r:HAS_HGNC] -> (hgnc)
 ;
 
+// PubMed
 MATCH (uni:UniProtEntry) WHERE uni.pubmed_ids <> ' '
 UNWIND uni.pubmed_ids AS pubmed_id
-MERGE (p:Publication{pub_id:toInteger(ltrim(pubmed_id))})
-SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id))
+MERGE (p:Publication:PubMed{pub_id:toInteger(ltrim(pubmed_id))})
+SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),
+   p.needs_properties=true, p.needs_references=true
 MERGE (uni) - [r:HAS_PUBLICATION] -> (p)
 ;
 
@@ -41,9 +43,9 @@ MERGE (uni) -[r:HAS_GENE_ONTOLOGY]-> (obo)
 ;
 
 MATCH (uni:UniProtEntry) WHERE uni.interacts_with IS NOT NULL
-UNWIND uni.interactswith AS target_id
+UNWIND uni.interacts_with AS target_id
 MATCH (target:UniProtEntry) WHERE  target.entry_id = target_id
-MERGE (uni) -[r:INTERACTS_WITH]- (target)
+MERGE (uni)-[r:INTERACTS_WITH]->(target)
 ;
 
 // AlphaFold URL
