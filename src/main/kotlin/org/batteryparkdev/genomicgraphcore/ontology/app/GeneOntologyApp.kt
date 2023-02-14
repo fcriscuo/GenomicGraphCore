@@ -39,7 +39,7 @@ fun main(args: Array<String>): Unit {
             app.deleteGoNodes()
         }
         println("Gene Ontology data will now be loaded from: $tempFilename  into the ${database} Neo4j database")
-        defineGoDatabaseConstraints()
+       // defineGoDatabaseConstraints()
         app.loadGeneOntologyData()
         println("Gene Ontology data has been loaded into Neo4j")
     } else {

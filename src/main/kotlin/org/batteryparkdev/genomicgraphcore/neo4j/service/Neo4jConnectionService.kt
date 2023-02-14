@@ -54,7 +54,7 @@ object Neo4jConnectionService {
         }
     }
     /*
-    Function to execute a specified CQL file
+    Function to execute a specified CQL file that alters the Neo4j
      */
 
     fun executeCqlSchemaFile(cqlFile: String): Unit {
@@ -62,6 +62,13 @@ object Neo4jConnectionService {
        // require(file.exists())
         require(file.extension == "cql")
         executeCypherCommand("CALL apoc.cypher.runSchemaFile(${cqlFile.formatNeo4jPropertyValue()})")
+    }
+
+    /*
+    Function to execute a specified CQL file
+     */
+    fun executeCqlFIle(cqlFile: String):Unit {
+       executeCypherCommand("CALL apoc.cypher.runFile(${cqlFile.formatNeo4jPropertyValue()})")
     }
 
     /*
