@@ -21,18 +21,27 @@ fun generatePublicationPlaceholderQuery( limit: Int = 0): String{
     }
 }
 
-fun getAllPlaceholderPubMedNodeIds(): Sequence<String> = runBlocking {
-    Neo4jConnectionService.executeCypherQuery(generatePublicationPlaceholderQuery(0))
-        .map { rec -> resolvePubMedIdentifier(rec) }
-        .toList().asSequence()
+private fun generateNeedsPropertiesQuery(limit: Int=Integer.MAX_VALUE):String =
+    "MATCH (pub:Publication) WHERE pub.needs_properties=true " +
+            " return pub.pub_id LIMIT $limit"
+
+private fun generateNeedsRefsQuery(limit: Int=Integer.MAX_VALUE):String =
+    "MATCH (pub:Publication) WHERE pub.needs_refs=true " +
+            " return pub.pub_id LIMIT $limit"
+
+
+@OptIn(ExperimentalStdlibApi::class)
+fun getAllPublicationPlaceholderPubIdsByType(type:String): Sequence<String> = runBlocking {
+  when (type.lowercase()){
+        "properties" -> Neo4jConnectionService.executeCypherQuery(generateNeedsPropertiesQuery())
+            .map { rec -> resolvePubMedIdentifier(rec) }
+            .toList().asSequence()
+       "refs" -> Neo4jConnectionService.executeCypherQuery(generateNeedsRefsQuery())
+           .map { rec -> resolvePubMedIdentifier(rec) }
+           .toList().asSequence()
+       else -> emptySequence()
+    }
 }
-
-
-fun gatAllPubmedIds(): Sequence<String> =
-    Neo4jConnectionService.executeCypherQuery(
-        "MATCH (pub:PubMed) RETURN pub.pub_id ")
-        .map { rec -> resolvePubMedIdentifier(rec) }
-        .toList().asSequence()
 
 private fun resolvePubMedIdentifier(record: Record): String =
     record.asMap()["pub.pub_id"].toString()
@@ -44,7 +53,6 @@ fun pubmedNodeExistsPredicate(pubId: String): Boolean =
             pubId, "PubMed"
         )
     )
-
 
 fun referenceNodeExistsPredicate(pubId: String): Boolean =
    publicationNodeExistsPredicate(
@@ -85,6 +93,6 @@ fun main() {
         PubmedModel.nodelabel, PubmedModel.nodeIdProperty,
         "16923108", "PubMed"
     )
-    println("Should be true: ${pubmedNodeExistsPredicate("16923108")}")
+    println("Should be true: ${pubmedNodeExistsPredicate("2478422")}")
     println("Should be false: ${referenceNodeExistsPredicate("10499589")}")
 }

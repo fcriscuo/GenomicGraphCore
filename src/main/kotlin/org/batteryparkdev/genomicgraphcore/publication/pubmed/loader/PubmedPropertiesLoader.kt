@@ -10,17 +10,19 @@ import kotlinx.coroutines.runBlocking
 import org.batteryparkdev.genomicgraphcore.common.CoreModel
 import org.batteryparkdev.genomicgraphcore.common.service.Neo4jPropertiesService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
-import org.batteryparkdev.genomicgraphcore.publication.getAllPlaceholderPubMedNodeIds
+import org.batteryparkdev.genomicgraphcore.publication.getAllPublicationPlaceholderPubIdsByType
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.model.PubmedModel
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.service.PubmedRetrievalService
+import org.batteryparkdev.genomicgraphcore.publication.pubmedNodeExistsPredicate
+import org.batteryparkdev.genomicgraphcore.publication.referenceNodeExistsPredicate
 
-class PubMedModelLoader() {
+class PubMedPropertiesLoader() {
 
     // resolve all the Publication/PubMed nodes that are currently in placeholder status
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun CoroutineScope.generatePublicationBatch() =
+    private fun CoroutineScope.generatePublicationPropertiesBatch() =
         produce<Set<String>> {
-            getAllPlaceholderPubMedNodeIds().chunked(60).asIterable().forEach {
+            getAllPublicationPlaceholderPubIdsByType("properties").chunked(60).asIterable().forEach {
                 send(it.toSet())
                 delay(20L)
             }
@@ -51,14 +53,13 @@ class PubMedModelLoader() {
    Load the PubMed nodes object implementations into the Neo4j database
     */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private  fun CoroutineScope.loadPubMedNodes(models: ReceiveChannel<CoreModel>) =
+    private  fun CoroutineScope.loadPubMedProperties(models: ReceiveChannel<CoreModel>) =
         produce<CoreModel> {
             for (model in models) {
                 // load the model data into Neo4j, then complete its relationships to
                 // other nodes
                 // The two operations are performed in the same coroutine to avoid race conditions
                 Neo4jConnectionService.executeCypherCommand(model.generateLoadModelCypher())
-                model.createModelRelationships()
                 send(model)
                 delay(20)
             }
@@ -72,20 +73,44 @@ class PubMedModelLoader() {
             for (model in models){
                 if(model is PubmedModel && model.referenceList.isNotEmpty()){
                     model.referenceList.forEach { ref -> run {
-                        Neo4jConnectionService.executeCypherCommand(ref.generateLoadModelCypher())
-                        ref.createModelRelationships()
+                        Neo4jConnectionService.executeCypherCommand(generateReferencePlaceholderNodeCypher(model.pubmedId,ref))
                     } }
                 }
+                // turn off needs_ref flag
+                //MATCH (p:Publication) WHERE p.pub_id = ${model.pubmedId} SET p.needs_properties=false
+
                 send(model)
                 delay(20L)
             }
         }
+    // Private function to generate the Cypher needed to optionally create a Reference placeholder node
+    // and create a HAS_REFERENCE relationship from the PubMed node
+    // If the Reference node already exists, only create the relationship
+    // If a PubMed node with the refId exists, just add the Reference label and create the relationship
 
-    fun loadPublicationNodes() = runBlocking{
-        val models = loadReferenceNodes(loadPubMedNodes(generatePubMedModels(generatePublicationBatch())))
+    private fun generateReferencePlaceholderNodeCypher(pubId: Int, refId: Int): String {
+        var cypher = " MATCH (pub:PubMed{pub_id: ${pubId.toString()}}) SET pub.needs_refs = false\n  "
+        if (pubmedNodeExistsPredicate(refId.toString())){
+            cypher = cypher.plus(
+                "MATCH (ref:PubMed{pub_id: ${refId.toString()}}) SET ref:Reference\n"
+            )
+        } else if (!referenceNodeExistsPredicate(refId.toString())){
+            cypher = cypher.plus(
+                "MERGE (ref:Publication:Reference{pub_id: ${refId.toString()}})\n " +
+                        "SET ref.url = genomiccore.resolvePubmedUrl(toString($refId))," +
+                        " ref.needs_properties=true, ref.needs_refs=false \n"
+            )
+        }
+        return cypher.plus(
+            "MERGE (pub) -[r:HAS_REFERENCE]->(ref); "
+        )
+    }
+
+    fun loadPublicationPubMedNodes() = runBlocking{
+        val models = loadReferenceNodes(loadPubMedProperties(generatePubMedModels(generatePublicationPropertiesBatch())))
         for (model in models){
             if (model is PubmedModel) {
-                println("PubMed Id ${model.pubmedId}  Title: ${model.articleTitle}  Reference count = ${model.referenceList.size}")
+                println("PubMed Id: ${model.pubmedId}  Title: ${model.articleTitle}  Reference count = ${model.referenceList.size}")
             }
         }
     }
@@ -96,5 +121,5 @@ fun main() {
     println("There will be a 20 second delay. If this is not the intended database, hit CTRL-C to terminate")
    // Thread.sleep(20_000L)
     println("Proceeding....")
-    PubMedModelLoader().loadPublicationNodes()
+    PubMedPropertiesLoader().loadPublicationPubMedNodes()
 }
