@@ -3,10 +3,13 @@ package org.batteryparkdev.genomicgraphcore.publication.pubmed.service
 import ai.wisecube.pubmed.PubmedArticle
 import ai.wisecube.pubmed.PubmedParser
 import arrow.core.Either
+import io.ktor.util.reflect.*
+import kotlinx.coroutines.delay
 import org.batteryparkdev.genomicgraphcore.common.service.LogService
 import org.batteryparkdev.genomicgraphcore.common.service.log
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
+import org.batteryparkdev.genomicgraphcore.publication.pubmed.model.PubmedModel
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import org.w3c.dom.NodeList
@@ -69,11 +72,12 @@ object PubmedRetrievalService {
             val text = URL(url).readText(Charset.defaultCharset())
             val parser = PubmedParser()
             val articleSet = parser.parse(text, ai.wisecube.pubmed.PubmedArticleSet::class.java)
-            for (i in 0 until pubmedIdSet.size){
-                articleList.add(articleSet.pubmedArticleOrPubmedBookArticle[i] as PubmedArticle)
-            }
+            // filter out PubmedBook objects
+            articleSet.pubmedArticleOrPubmedBookArticle.stream().filter { it is ai.wisecube.pubmed.PubmedArticle}
+                .forEach{art -> articleList.add(art as PubmedArticle)}
             Either.Right(articleList)
         } catch (e: Exception) {
+            println(e.message)
             Either.Left(e)
         }
     }
@@ -150,4 +154,3 @@ object PubmedRetrievalService {
         return referenceSet.toSet()
     }
 }
-
