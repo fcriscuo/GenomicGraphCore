@@ -140,7 +140,7 @@ data class PubmedModel(
             val authorNameList = author.lastNameOrForeNameOrInitialsOrSuffixOrCollectiveName
             var name = ""
             if (authorNameList[0] is CollectiveName) {
-                return (authorNameList[0] as CollectiveName).getvalue()
+                return (authorNameList[0] as CollectiveName).getvalue().formatNeo4jPropertyValue()
             }
             val lastName: LastName = authorNameList[0] as LastName
             name = lastName.getvalue()

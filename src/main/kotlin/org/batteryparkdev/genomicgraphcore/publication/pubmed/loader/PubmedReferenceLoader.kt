@@ -20,7 +20,7 @@ class PubMedReferenceLoader() {
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun CoroutineScope.generatePublicationPropertiesBatch() =
         produce<Set<String>> {
-            getAllPublicationPlaceholderPubIdsByType("refs").chunked(60).asIterable().forEach {
+            getAllPublicationPlaceholderPubIdsByType("refs").chunked(100).asIterable().forEach {
                 send(it.toSet())
                 delay(20L)
             }

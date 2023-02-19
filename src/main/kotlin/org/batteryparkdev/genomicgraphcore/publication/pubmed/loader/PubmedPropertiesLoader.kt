@@ -22,7 +22,7 @@ class PubMedPropertiesLoader() {
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun CoroutineScope.generatePublicationPropertiesBatch() =
         produce<Set<String>> {
-            getAllPublicationPlaceholderPubIdsByType("properties").chunked(60).asIterable().forEach {
+            getAllPublicationPlaceholderPubIdsByType("properties").chunked(100).asIterable().forEach {
                 send(it.toSet())
                 delay(20L)
             }
@@ -72,13 +72,10 @@ class PubMedPropertiesLoader() {
         produce<CoreModel> {
             for (model in models){
                 if(model is PubmedModel && model.referenceList.isNotEmpty()){
-                    model.referenceList.forEach { ref -> run {
+                    model.referenceList.filter{it>0}.forEach { ref -> run {
                         Neo4jConnectionService.executeCypherCommand(generateReferencePlaceholderNodeCypher(model.pubmedId,ref))
                     } }
                 }
-                // turn off needs_ref flag
-                //MATCH (p:Publication) WHERE p.pub_id = ${model.pubmedId} SET p.needs_properties=false
-
                 send(model)
                 delay(20L)
             }
@@ -89,10 +86,10 @@ class PubMedPropertiesLoader() {
     // If a PubMed node with the refId exists, just add the Reference label and create the relationship
 
     private fun generateReferencePlaceholderNodeCypher(pubId: Int, refId: Int): String {
-        var cypher = " MATCH (pub:PubMed{pub_id: ${pubId.toString()}}) SET pub.needs_refs = false\n  "
+        var cypher = "MATCH (pub:PubMed{pub_id: ${pubId.toString()}})  SET pub.needs_refs = false\n  "
         if (pubmedNodeExistsPredicate(refId.toString())){
             cypher = cypher.plus(
-                "MATCH (ref:PubMed{pub_id: ${refId.toString()}}) SET ref:Reference\n"
+                "WITH pub MATCH (ref:PubMed{pub_id: ${refId.toString()}})  SET ref:Reference\n"
             )
         } else if (!referenceNodeExistsPredicate(refId.toString())){
             cypher = cypher.plus(

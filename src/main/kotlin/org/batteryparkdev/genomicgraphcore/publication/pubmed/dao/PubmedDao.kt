@@ -46,8 +46,6 @@ class PubmedDao(private val model: PubmedModel) {
 
             }
         }
-
-
         override val modelRelationshipFunctions: (CoreModel) -> Unit = ::completeReferenceRelationships
     }
 }

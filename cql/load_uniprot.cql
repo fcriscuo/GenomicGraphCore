@@ -27,6 +27,13 @@ MATCH(hgnc:Hgnc{hgnc_id:uni.hgnc_id})
 MERGE (uni) - [r:HAS_HGNC] -> (hgnc)
 ;
 
+// set the gene_symbol property for a UniProt entry based on its
+// related HGNC
+MATCH (uni:UniProtEntry) WHERE uni.hgnc_id <> ' '
+MATCH(hgnc:Hgnc{hgnc_id:uni.hgnc_id})
+SET uni.gene_symbol = hgnc.gene_symbol
+;
+
 // PubMed
 MATCH (uni:UniProtEntry) WHERE uni.pubmed_ids <> ' '
 UNWIND uni.pubmed_ids AS pubmed_id

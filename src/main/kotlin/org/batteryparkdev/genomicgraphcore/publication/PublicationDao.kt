@@ -9,7 +9,6 @@ import org.neo4j.driver.Record
 
 const val pubNodeName = "publication"
 
-
 // supply a Neo4j query that will return all/limited PubMed node Ids that are
 // currently placeholders
 fun generatePublicationPlaceholderQuery( limit: Int = 0): String{
@@ -86,13 +85,4 @@ fun publicationNodeExistsPredicate(nodeId: NodeIdentifier): Boolean {
         false -> LogService.warn("Invalid NodeIdentifier: $nodeId")
     }
     return false
-}
-
-fun main() {
-    val pubmedNode = NodeIdentifier(
-        PubmedModel.nodelabel, PubmedModel.nodeIdProperty,
-        "16923108", "PubMed"
-    )
-    println("Should be true: ${pubmedNodeExistsPredicate("2478422")}")
-    println("Should be false: ${referenceNodeExistsPredicate("10499589")}")
 }
