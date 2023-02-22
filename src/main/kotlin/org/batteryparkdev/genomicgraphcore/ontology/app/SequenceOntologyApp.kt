@@ -31,7 +31,7 @@ fun main(args: Array<String>): Unit {
     println("Sequence Ontology data will now be loaded from: $soFile  into the $database Neo4j database")
     val stopwatch = Stopwatch.createStarted()
     app.loadSequenceOntologyData()
-    println("Sequence  Ontology data has been loaded into Neo4j")
+    println("Sequence Ontology data has been loaded into Neo4j")
     println("The elapsed time was: ${stopwatch.elapsed(TimeUnit.SECONDS)} seconds.")
 
 }

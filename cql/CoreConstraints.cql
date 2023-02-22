@@ -14,6 +14,7 @@ CREATE CONSTRAINT unique_disgenet_gene_id IF NOT EXISTS FOR (gene:Disgenet_Gene)
 CREATE CONSTRAINT unique_disgenet_disease_id IF NOT EXISTS FOR (dis:DisgenetDisease) REQUIRE dis.disease_id IS UNIQUE;
 CREATE CONSTRAINT unique_disgenet_variant_snp_id IF NOT EXISTS FOR (var:DisgenetVariant) REQUIRE var.snp_id IS UNIQUE;
 CREATE CONSTRAINT unique_entrez_gene_id IF NOT EXISTS FOR (entrez:EntrezGene) REQUIRE entrez.gene_id IS UNIQUE
+CREATE CONSTRAINT unique_reactome_id IF NOT EXISTS FOR (react:Reactome) REQUIRE react.reactome_id IS UNIQUE
 
 CREATE INDEX hgnc_gene_symbol_index FOR (h:Hgnc) ON h.gene_symbol;
 CREATE INDEX publication_doi_index FOR (p:Publication) ON p.doi_id;

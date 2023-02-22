@@ -59,18 +59,7 @@ class GoDataImporter(private val goFilename:String): CoroutineScope {
         job.cancel()
     }
 
-//    private fun loadPubmedJob(): String {  // job 1
-//        println("1 - Starting PubMed loader")
-//        val taskDuration = 172_800_000L
-//        val timerInterval = 60_000L
-//        val scanTimer = AsyncPubMedPublicationLoader.scheduledPlaceHolderNodeScan(timerInterval)
-//        try {
-//            Thread.sleep(taskDuration)
-//        } finally {
-//            scanTimer.cancel();
-//        }
-//        return "PubMed data loaded"
-//    }
+
 }
 
 fun main(args: Array<String>): Unit = runBlocking {
