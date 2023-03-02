@@ -37,6 +37,26 @@ components via its relationship to the latter's UniProtEntry nodes.
 There are many examples of integrating data from multiple sources into a graph database to model biological interactions. 
 The design for the GenomicGraphCore database is based on work published by Lysenko *et al*.
 
+### Execution
+The Genomic Core Neo4j graph database is created by loading ontology and genomic data from files downloaded from 
+primary data sources such as UniProt and NCBI.
+The genomic data files are either tab or comma delimited and the data are loaded using CQL scripts that utilize
+the Neo4j LOAD CSV utility.
+By default, the CQL files are assumed to be in the application's data subdirectory.
+If that is not the case, the individual CQL scripts must be edited to reflect the correct file location.
+The ontology data are loaded from OBO-formateed files using a Kotlin applications.
+Currently, the GeneOntology and Human Phenotype Ontology data are downloaded by the application from their
+primary source into /tmpThe Squence Ontology does not support FTP access and its *so.obo* file is assumend to be in the application's
+data/so subdirectory.
+
+As noted below, CQL scripts invoke custom stored procedures defined in the GenomicCore Neo4j Plugin library.
+This library must be copied into the Neo4j database plugins subdirectory.
+
+The GenomicCoreDataLoader (*org.batteryparkdev.genomicgraphcore.cypher.app.GenomicCoreDataLoader*) application will 
+define the Neo4j database constraints, load the ontology data, and then load the genomic data in the proper
+order.
+This Kotlin file should be edited to support new constraints, ontologies, and/or genomic data.
+
 ### Implementation
 
 As noted in the Indroduction, the ETL functions for this database are implemented in Kotlin and CQL.
@@ -45,7 +65,8 @@ proved to be the most performative technique for loading these files.
 It is also robust in handling data anomalies in the source files.
 Data provided in non-delimited formats (*eg* OBO) are loaded using Kotlin components.
 The format of the CQL scripts was derived from similar scripts published by Tuck.
-[
+
+
 
 ### Requirements
 
@@ -73,6 +94,8 @@ jar file to their Neo4j server's plugin directory. The Neo4j server should then 
 
 Parsing of XML data loaded via RESTful requests to NCBI, as described below, requires the [wisecube/pubmed-parser](https://github.com/wisecubeai/pubmed-parser)
 library be downloaded or cloned from github. After building and packaging this library, the jar file should be placed within the application's claspath.
+
+
 
 ###  PubMed data
 

@@ -12,27 +12,31 @@ in a connected Neo4j database.
 object CypherLoadChannel {
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun CoroutineScope.sendCypher(cyphers: ReceiveChannel<String>):ReceiveChannel<String>  =
-        produce<String>{
-            for (cypher in cyphers){
-                send(cypher)
-                delay(20)
+    suspend fun sendCypher(cyphers: ReceiveChannel<String>):ReceiveChannel<String>  =
+        coroutineScope {
+            produce<String> {
+                for (cypher in cyphers) {
+                    send(cypher)
+                    delay(20)
+                }
             }
         }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun CoroutineScope.receiveCypher(statements: ReceiveChannel<String>): ReceiveChannel<String> =
-        produce<String> {
-            for (statement in statements) {
-               Neo4jConnectionService.executeCypherLoadAsync(statement)
-                send(statement.substring(0, 20))  // to support debugging if necessary
-                delay(20)
+    suspend fun receiveCypher(statements: ReceiveChannel<String>): ReceiveChannel<String> =
+        coroutineScope {
+            produce<String> {
+                for (statement in statements) {
+                    Neo4jConnectionService.executeCypherLoadAsync(statement)
+                    send(statement.substring(0, 20))  // to support debugging if necessary
+                    delay(20)
+                }
             }
         }
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun CoroutineScope.processCypher(cypher:String): Unit {
         val cypherChannel = produce{send(cypher)}
-        receiveCypher(sendCypher(cypherChannel))
+        coroutineScope { receiveCypher(sendCypher(cypherChannel)) }
     }
 }
 
