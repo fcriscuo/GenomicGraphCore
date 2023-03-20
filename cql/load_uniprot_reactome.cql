@@ -1,13 +1,17 @@
-:auto LOAD CSV WITH HEADERS FROM
-'file:///Volumes/SSD870/GenomicCoreData/Reactome/UniProt2ReactomeReactions_human.tsv' AS line FIELDTERMINATOR '\t'
-CALL {
-WITH line
-MERGE (react:Reactome {reactome_id: line.ReactomeID})
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Seat5TBExt/GenomicCoreData/Reactome/UniProt2ReactomeReactions_human.tsv",
+{ header:true,  sep:"TAB"}
+)
+YIELD nodeRecordNo, map AS nodeRecord RETURN nodeRecord, nodeRecordNo
+','
+WHERE NOT nodeRecord.ReactomeID IS NULL
+MERGE (react:Reactome {reactome_id: nodeRecord.ReactomeID})
 ON CREATE
-SET  react.reactome_url =line.ReactomeURL,
-  react.reactome_pathway= line.ReactomePathway
-WITH react, line
-MATCH (uni:UniProtEntry) WHERE uni.entry_id = Line.UniProtID
+SET react.reactome_url =nodeRecord.ReactomeURL,
+  react.reactome_pathway= nodeRecord.ReactomePathway
+WITH react, nodeRecord
+MATCH (uni:UniProtEntry) WHERE uni.entry_id = nodeRecord.UniProtID
 MERGE (uni)-[r:HAS_REACTOME]->(react);
-} IN TRANSACTIONS OF 1000 ROWS;
+',
+{batchSize:1000, iterateList:true, parallel:true});
 

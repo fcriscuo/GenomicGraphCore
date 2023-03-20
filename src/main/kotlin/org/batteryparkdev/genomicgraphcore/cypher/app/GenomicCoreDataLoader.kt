@@ -12,19 +12,22 @@ Kotlin application to load ontology and core data files
  */
 
 private val cqlFiles = listOf<String>(
-    "./data/load_hgnc.cql",
-    "./data/load_entrez_gene.cql",
-    "./data/load_entrez_gene_go.cql",
-    "./data/load_entrez_gene_pubmed.cql",
-    "./data/load_entrez_gene_reactome.cql",
-    "./data/load_uniprot.cql",
-    "./data/load_uniprot_reactome.cql",
-    "./data/load_disgenet.cql",
-    "./data/load_nhgri_gene.cql"
+    "./cql/load_hgnc.cql",
+    "./cql/load_entrez_gene.cql",
+    "./cql/load_entrez_gene_reactome.cql",
+    "./cql/load_uniprot.cql",
+    "./cql/load_uniprot_reactome.cql",
+    "./cql/load_disgenet.cql",
+    "./cql/load_nhgri_gene.cql",
+    "./cql/load_pubmed_ids"
     )
 
+private fun defineRelationships() {
+    Neo4jConnectionService.executeCypherCommand("CALL apoc.cypher.runFile(${"./cql/CoreConstraints.cql".formatNeo4jPropertyValue()})")
+}
+
 private fun defineConstraints(){
-    Neo4jConnectionService.executeCypherCommand("CALL apoc.cypher.runFile(${"./data/CoreConstraints.cql".formatNeo4jPropertyValue()})")
+    Neo4jConnectionService.executeCypherCommand("CALL apoc.cypher.runFile(${"./cql/CoreConstraints.cql".formatNeo4jPropertyValue()})")
 }
 
 private fun processCqlScripts() {
@@ -40,4 +43,6 @@ fun main() {
     SequenceOntologyLoader().loadOntologyFile()
     // load the core data
     processCqlScripts()
+    // define relationships
+    defineRelationships()
 }
