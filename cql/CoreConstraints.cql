@@ -1,9 +1,5 @@
 // Constraints and Indexes for GenomicGraphCore
 
-
-CREATE CONSTRAINT unique_oboterm_id IF NOT EXISTS FOR (obo: OboTerm)  REQUIRE obo.obo_id IS UNIQUE;
-CREATE CONSTRAINT unique_obosyn_coll_id IF NOT EXISTS FOR (syncoll: OboSynonymCollection)  REQUIRE syncoll.go_id IS UNIQUE;
-CREATE CONSTRAINT unique_obo_xref_id IF NOT EXISTS FOR (xref: OboXref)  REQUIRE xref.xref_key IS UNIQUE;
 CREATE CONSTRAINT unique_pubmed_id IF NOT EXISTS FOR (pub: Publication)  REQUIRE pub.pub_id IS UNIQUE;
 CREATE CONSTRAINT unique_obosyn_id IF NOT EXISTS FOR (syn: GoSynonym)  REQUIRE syn.synonym_id IS UNIQUE;
 CREATE CONSTRAINT unique_hgnc_id IF NOT EXISTS FOR (h:Hgnc)  REQUIRE h.hgnc_id IS UNIQUE;

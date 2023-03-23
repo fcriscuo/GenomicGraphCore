@@ -3,17 +3,17 @@ package org.batteryparkdev.genomicgraphcore.ontology.app
 import org.batteryparkdev.genomicgraphcore.common.datamining.FtpClient
 import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 
-class GeneOntologyLoader(): OntologyFileLoader() {
+class DiseaseOntologyLoader(): OntologyFileLoader() {
 
     override val localFilename: String
-        get() = "/tmp/gene_ontology.obo"
+        get() = "/tmp/disease_ontology.obo"
     override val ontologyName: String
-        get() = "gene_ontology"
+        get() = "disease_ontology"
     override val labelList
         get() = listOf<String>("GoTerm","OboTerm")
 
     override fun loadOntologyFile() {
-        val result = FtpClient.retrieveRemoteFileByFtpUrl(FilesPropertyService.geneontologyDownloadUrl, localFilename)
+        val result = FtpClient.retrieveRemoteFileByFtpUrl(FilesPropertyService.diseaseOntologyDownloadUrl, localFilename)
         if (result.isRight()) {
             loadOntologyData()
         } else {
@@ -22,8 +22,8 @@ class GeneOntologyLoader(): OntologyFileLoader() {
     }
 }
 
-// main function for stand-alone loading of GO data
+// main function for stand-alone loading of DO data
 fun main() {
-    GeneOntologyLoader().loadOntologyFile()
+    DiseaseOntologyLoader().loadOntologyFile()
 }
 

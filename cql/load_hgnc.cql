@@ -1,6 +1,6 @@
 CALL apoc.periodic.iterate('
 CALL apoc.load.csv("Volumes/Dea5TBExt/GenomicCoreData/HGNC/hgnc_complete_set.tsv", { header:true,  sep:"TAB",
-  mapping {
+  mapping: {
   `alias_symbol`: {array:true,arraySep:"|", name:"alias_symbols"},
   `alias_name`: {array:true,arraySep:"|", name:"alias_names"},
   `gene_group`: {array:true,arraySep:"|", name:"gene_groups"},

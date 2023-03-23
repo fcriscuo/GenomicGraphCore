@@ -8,5 +8,6 @@ object FilesPropertyService {
     val baseDataSubdirectory = config.getConfigPropertyAsString("base.subdirectory.name")
     val geneontologyDownloadUrl=config.getConfigPropertyAsString("geneontology.download.url")
     val humanPhenotypeDownloadUrl = config.getConfigPropertyAsString("humanpheno.ontology.download.url")
+    val diseaseOntologyDownloadUrl = config.getConfigPropertyAsString("disease.ontology.download.url")
 
 }

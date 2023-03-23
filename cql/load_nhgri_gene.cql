@@ -2,7 +2,7 @@
 CALL apoc.periodic.iterate('
 CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/NHGRI/NCBI_Clinical_Genomic_Database.tsv",
 { header:true,  sep:"TAB",
-  mapping{
+  mapping:{
     `CONDITION`: {array:true, arraySep:";",name:"conditions"},
     `ALLELIC CONDITIONS`: {array:true, arraySep:";",name:"allelic_conditions"},
     `MANIFESTATION CATEGORIES`: {array:true, arraySep:";",name:"manifestation_categories"},

@@ -8,7 +8,9 @@ ON CREATE
 MERGE (uni) - [r:HAS_PUBLICATION] -> (p)
 ;
 
-// EntrezGene Pubmed placeholders
+// EntrezGene PubMed placeholders
+// to filter human (i.e. tax id 9606) from gene2pub file downloaded from NCBI
+// grep "^9606\t" gene2pubmed > human_gene2pubmed.tsv
 CALL apoc.periodic.iterate('
 CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/Entrez/Gene/human_gene2pubmed.tsv", { header:true,sep:"TAB"}
 )
@@ -24,9 +26,9 @@ SET p:PubMed
 MERGE (eg)-[r:HAS_PUBLICATION]->(p)
 ',
 {batchSize:4000, iterateList:true, parallel:true});
-// to filter human (i.e. tax id 9606) from gene2pub file from NCBI
-// grep "^9606\t" gene2pubmed > human_gene2pubmed.tsv
 
+
+// HGNC PubMed placeholders
 // create a Publication/PubMed placeholder node if pub_id is novel
 match (h:Hgnc) where h.pubmed_ids <> " "
 unwind h.pubmed_ids AS pubmed_id
@@ -37,6 +39,7 @@ ON CREATE
 merge (h) - [r:HAS_PUBLICATION] -> (p)
 ;
 
+// NHGRI PubMed placeholders
 //Create Publication placeholder nodes if pub_id is novel
 match (gene:NHGRI_Gene) where gene.pub_ids IS NOT NULL
 unwind gene.pub_ids AS pubmed_id
