@@ -10,10 +10,13 @@ import java.io.File
 
 /*
 Responsible for resolving application properties from a specified property file
-(e.g. neo4j.config) located in the ~/.genomicapps directory
+The directory for configuration file can be specified by the CONFIG_DIR environment
+variable.
+The deafult is $HOME/.genomicapps
  */
 class ApplicationProperties(val configFileName: String) {
-    private val baseDir = getEnvVariable("HOME").plus("/.genomicapps")
+    private val configDir = getEnvVariable("CONFIG_DIR")
+        ?: getEnvVariable("HOME").plus("/.genomicapps")
 
     private val config = configurationFromFile()
 
@@ -36,17 +39,17 @@ class ApplicationProperties(val configFileName: String) {
             .configure(
                 params.fileBased()
                     .setFile(propertiesFile)
-                    .setBasePath(baseDir)
+                    .setBasePath(configDir)
             )
         return builder.configuration
     }
 
     private fun propertiesFileExists():Boolean {
-        val fileName = baseDir.plus("/").plus(configFileName)
+        val fileName = configDir.plus("/").plus(configFileName)
         return  File(fileName).canRead()
     }
 
-    fun getEnvVariable(varname:String):String = System.getenv(varname) ?: "undefined"
+    fun getEnvVariable(varname:String):String? = System.getenv(varname)
 
 
 }

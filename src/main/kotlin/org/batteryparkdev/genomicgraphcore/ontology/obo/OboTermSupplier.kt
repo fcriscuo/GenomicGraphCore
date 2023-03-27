@@ -8,7 +8,7 @@ import java.util.*
 import java.util.function.Supplier
 
 /*
-Responsible for parsing complete Gene Ontology Terms ([Term]) from
+Responsible for parsing complete Ontology Terms ([Term]) from
 a specified OBO-formatted file
 Utilizes an intermediate object, Termlines, to accommodate the
 variable number of synonyms, xrefs, and relationships in a OBO Term

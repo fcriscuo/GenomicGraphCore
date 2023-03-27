@@ -1,51 +1,49 @@
-LOAD CSV WITH HEADERS FROM
-'file:///Volumes/SSD870/GenomicCoreData/UniProt/uniprot_20Jan2023.tsv' AS line FIELDTERMINATOR '\t'
-CALL {
-WITH line
-MERGE (uni:UniProtEntry {entry_id: line.Entry})
+// UniProt Entry
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/UniProt/uniprot_20Jan2023.tsv", { header:true, sep:"TAB",
+mapping:{
+     `Protein names`: {array:true, arraySep:";", name:"protein_names"},
+     `Gene Names`: {array:true, arraySep:";", name:"gene_names"},
+     `Interacts with`: {array:true, arraySep:";", name:"interacts_with"},
+     `Gene Ontology IDs`: {array:true, arraySep:";", name:"gene_ontology_ids"},
+     `PubMed ID`: {array:true, arraySep:";", name:"pubmed_ids"},
+     `EMBL`: {array:true, arraySep:";", name:"embl_ids"},
+     `AlphaFoldDB`: {array:true, arraySep:";", name:"alpha_fold_ids"},
+     `PDB`: {array:true, arraySep:";", name:"pdb"},
+     `dbSNP`: {array:true, arraySep:";", name:"dbSNPs"},
+     `HGNC`: {array:true, arraySep:";", name:"hgnc_ids"},
+     `Reactome`: {array:true, arraySep:";", name:"reactome_id"},
+     `Pharos`: {array:true, arraySep:";", name:"pharos_id"}
+}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+WHERE NOT nodeRecord.`Entry` IS NULL
+MERGE (uni:UniProtEntry {entry_id: nodeRecord.Entry})
+SET  uni.entry_name =nodeRecord.`Entry Name`,
+  uni.uniprot_emtry_url = replace("https://www.uniprot.org/uniprotkb/XXXX/entry","XXXX",uni.entry_id),
+  uni.protein_names = nodeRecord.`Protein names`,
+  uni.gene_names = nodeRecord.`Gene Names`,
+  uni.length = toInteger(nodeRecord.length),
+  uni.gene_symbol = nodeRecord.`Gene Names (primary)`,
+  uni.interacts_with = nodeRecord.`Interacts with`,
+  uni.gene_ontology_ids = nodeRecord.`Gene Ontology IDs`,
+  uni.pubmed_ids=nodeRecord.`PubMed ID`,
+  uni.embl_ids=nodeRecord.EMBL,
+  uni.alpha_fold_ids = nodeRecord.AlphaFoldDB,
+  uni.pdb = nodeRecord.PDB,,
+  uni.dbSNPs = nodeRecord.dbSNP,
+  uni.hgnc_ids = nodeRecord.HGNC,
+  uni.reactome_id = nodeRecord.Reactome,
+  uni.pharos_id = nodeRecord.Pharos
+',
+{batchSize:1000, iterateList:true, parallel:true});
 
-SET  uni.entry_name =line.`Entry Name`,
-  uni.uniprot_emtry_url = replace('https://www.uniprot.org/uniprotkb/XXXX/entry','XXXX',uni.entry_id),
-  uni.protein_names = coalesce(split(line.`Protein names`,';'),' '),
-  uni.gene_names = coalesce(split(line.`Gene Names`,' '),' '),
-  uni.length = toInteger(line.length),
-  uni.gene_symbol = line.`Gene Names (primary)`,
-  uni.interacts_with = coalesce(split(line.`Interacts with`,';'),' '),
-  uni.gene_ontology_ids = coalesce(split(line.`Gene Ontology IDs`,';'),' '),
-  uni.pubmed_ids=coalesce(split(line.`PubMed ID`,';'),' '),
-  uni.embl_ids=coalesce(split(line.EMBL,';'),' '),
-  uni.alpha_fold_id = replace(line.AlphaFoldDB,';',''),
-  uni.pdb = replace(line.PDB,';',''),
-  uni.dbSNPs = coalesce(split(line.dbSNP,' '),' '),
-  uni.hgnc_id = replace(line.HGNC,';',''),
-  uni.reactome_id = replace(line.Reactome,';',''),
-  uni.pharos_id = replace(line.Pharos,';','')
-} IN TRANSACTIONS OF 1000 ROWS;
-
+// set the gene_symbol property for a UniProt entry based on its
+// related HGNC
 MATCH (uni:UniProtEntry) WHERE uni.hgnc_id <> ' '
 MATCH(hgnc:Hgnc{hgnc_id:uni.hgnc_id})
-MERGE (uni) - [r:HAS_HGNC] -> (hgnc)
-;
-
-// PubMed
-MATCH (uni:UniProtEntry) WHERE uni.pubmed_ids <> ' '
-UNWIND uni.pubmed_ids AS pubmed_id
-MERGE (p:Publication:PubMed{pub_id:toInteger(ltrim(pubmed_id))})
-SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),
-   p.needs_properties=true, p.needs_references=true
-MERGE (uni) - [r:HAS_PUBLICATION] -> (p)
-;
-
-MATCH (uni:UniProtEntry) WHERE uni.gene_ontology_ids <> ' '
-UNWIND uni.gene_ontology_ids AS go_id
-MATCH(obo: OboTerm) WHERE obo.obo_id = go_id
-MERGE (uni) -[r:HAS_GENE_ONTOLOGY]-> (obo)
-;
-
-MATCH (uni:UniProtEntry) WHERE uni.interacts_with IS NOT NULL
-UNWIND uni.interacts_with AS target_id
-MATCH (target:UniProtEntry) WHERE  target.entry_id = target_id
-MERGE (uni)-[r:INTERACTS_WITH]->(target)
+SET uni.gene_symbol = hgnc.gene_symbol
 ;
 
 // AlphaFold URL

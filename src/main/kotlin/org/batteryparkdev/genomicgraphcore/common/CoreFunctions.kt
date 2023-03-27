@@ -193,3 +193,15 @@ fun formatIntList(intList: String): String =
         false -> "[0]"
     }
 
+ fun formatNeo4jStringList(stringList: List<String>): String {
+     var result = "["
+     when (stringList.isNotEmpty()) {
+         true -> {
+             stringList.forEach { result = result.plus("${it.formatNeo4jPropertyValue()},") }
+             result = result.dropLast(1).plus("]")
+         }
+         false -> result="[]"
+     }
+     return result
+ }
+

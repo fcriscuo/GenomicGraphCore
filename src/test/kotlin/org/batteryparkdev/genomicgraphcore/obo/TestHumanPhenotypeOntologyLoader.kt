@@ -1,21 +1,19 @@
 package org.batteryparkdev.genomicgraphcore.obo
 
-import com.google.common.base.Stopwatch
 import org.batteryparkdev.genomicgraphcore.common.datamining.FtpClient
 import org.batteryparkdev.genomicgraphcore.common.service.FilesPropertyService
 import org.batteryparkdev.genomicgraphcore.common.service.Neo4jPropertiesService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
-import org.batteryparkdev.genomicgraphcore.ontology.app.HumanPhenotypeOntologyApp
+import org.batteryparkdev.genomicgraphcore.ontology.app.HumanPhenotypeOntologyLoader
 import org.batteryparkdev.genomicgraphcore.ontology.obo.OboTerm
-import java.util.concurrent.TimeUnit
 
 
 fun main(args: Array<String>): Unit {
     val tempFilename = "/tmp/human_phenotype.obo"
     val result = FtpClient.retrieveRemoteFileByFtpUrl(FilesPropertyService.humanPhenotypeDownloadUrl, tempFilename)
     if (result.isRight()) {
-        val app = HumanPhenotypeOntologyApp(tempFilename)
+        val app = HumanPhenotypeOntologyLoader()
         val database = Neo4jPropertiesService.neo4jDatabase
         if (Neo4jConnectionService.isTestingContext().not()) {
             println("ERROR: $database is not a test or sample database")
@@ -27,15 +25,11 @@ fun main(args: Array<String>): Unit {
         Thread.sleep(20_000L)
         deleteOboNodes()
         println("Human Phenotype Ontology data will now be loaded from: $tempFilename  into the $database Neo4j database")
-        val stopwatch = Stopwatch.createStarted()
-        app.loadHumanPhenotypeOntologyData()
-        println("Human Phenotype Ontology data has been loaded into Neo4j")
-        println("The elapsed time was: ${stopwatch.elapsed(TimeUnit.SECONDS)} seconds.")
+        app.loadOntologyFile()
     } else {
         result.tapLeft {  e -> println(e.message) }
     }
 }
-
 
 fun deleteOboNodes():String {
     OboTerm.nodeNameList.forEach { nodeName -> Neo4jUtils.detachAndDeleteNodesByName(nodeName) }

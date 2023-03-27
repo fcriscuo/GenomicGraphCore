@@ -3,7 +3,6 @@ package org.batteryparkdev.genomicgraphcore.publication.pubmed.dao
 import org.batteryparkdev.genomicgraphcore.common.*
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifierDao
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.RelationshipDefinition
-import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jUtils
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.model.PubmedModel
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.model.PubmedReference
@@ -14,17 +13,18 @@ class PubmedDao(private val model: PubmedModel) {
 
     private final val nodename = "pubmed"
 
-    fun generatePubMedCypher(): String = generateMergeCypher()
+    fun generatePubMedPropertiesCypher(): String = generateMergeCypher()
         .plus(" RETURN  $nodename \n")
 
-    // mao PubMedModel properties to Neo4j node properties
+    // map PubMedModel properties to Neo4j node properties
     // used for node creation and node update
     private fun mapPubMedProperties(): String =
         " cited_by_count: ${model.citedByCount}, " +
-                " author: ${model.authors.formatNeo4jPropertyValue()}, " +
+                " authors: [${model.authors.joinToString(separator = ",")}], " +
                 " journal_issue: ${model.journalIssue.formatNeo4jPropertyValue()}, " +
                 " pmc_id: ${model.pmcId.formatNeo4jPropertyValue()}, " +
                 " title: ${model.articleTitle.removeInternalQuotes().formatNeo4jPropertyValue()}, " +
+                " abstract: ${model.abstract.removeInternalQuotes().formatNeo4jPropertyValue()}, " +
                 " doi_id: ${model.doiId.formatNeo4jPropertyValue()}," +
                 " reference_ids: ${formatIntList(model.getPubMedIds().joinToString(separator = "|"))}, " +
                 " reference_count: ${model.referenceList.size}, " +
@@ -34,39 +34,19 @@ class PubmedDao(private val model: PubmedModel) {
         "CALL apoc.merge.node(['Publication','PubMed'], " +
                 "{ pub_id: ${model.pubmedId}}, " +
                 "{ ${mapPubMedProperties()}, created: datetime()}, " +
-                "{ ${mapPubMedProperties()}, last_mod: datetime()} ) YIELD node AS $nodename \n"
+                "{ ${mapPubMedProperties()}, last_mod: datetime()} ) YIELD node AS $nodename \n" +
+                " MATCH (p:Publication) WHERE p.pub_id = ${model.pubmedId} SET p.needs_properties=false"
+
+
 
     companion object : CoreModelDao {
-        // Create a Section node for the publication's abstract
-        private fun completeRelationships(model: CoreModel): Unit {
-            if (model is PubmedModel && model.abstract.isNotEmpty()){
-                val sectionId = mergePublicationSection(model)
-                Neo4jConnectionService.executeCypherCommand(
-                    "MATCH (p:Publication), (s:PublicationSection) " +
-                            " WHERE p.pub_id = ${model.pubmedId} AND s.section_id = $sectionId " +
-                            " CREATE (p) -[r:HAS_SECTION {type: \"Abstract\"} ]-> (s)"
-                )
+       // create placeholder nodes for references
+        private fun completeReferenceRelationships(model: CoreModel): Unit {
+            if (model is PubmedModel){
+
             }
         }
-        /*
-          Private function to create a PublicationSection node and a relationship to the
-          Publication node
-           */
-        private fun mergePublicationSection(model: PubmedModel): String {
-            val pubId = model.pubmedId.toString()
-            return Neo4jConnectionService.executeCypherCommand(
-                "MERGE (s:PublicationSection{ section_id: ${getPublicationSectionId(pubId)}}) " +
-                        "SET s.text = ${model.abstract.formatNeo4jPropertyValue()} RETURN s.section_id"
-            )
-        }
-
-        private fun getPublicationSectionId(pubId: String) =
-            pubId.plus("-").plus(Neo4jConnectionService.executeCypherCommand(
-            "MATCH (p:Publication{p: ${pubId} }) -- " +
-                    "(PublicationSection) RETURN COUNT(PublicationSection.section_id) +1"))
-
-
-        override val modelRelationshipFunctions: (CoreModel) -> Unit = ::completeRelationships
+        override val modelRelationshipFunctions: (CoreModel) -> Unit = ::completeReferenceRelationships
     }
 }
 

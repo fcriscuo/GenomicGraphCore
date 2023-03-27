@@ -15,7 +15,7 @@ args: Array<String>
 class OboTermDao(private val ontology: String, private val labels: List<String>) {
 
     fun persistOboTerm(oboTerm: OboTerm){
-        mergeGoTerm(oboTerm)
+        mergeOboTerm(oboTerm)
         if (oboTerm.synonyms.isNotEmpty()) {
             OboSynonymDao.persistGoSynonymData(oboTerm)
         }
@@ -41,7 +41,7 @@ class OboTermDao(private val ontology: String, private val labels: List<String>)
    map OboTerm properties to Neo4j node properties
    n.b. change internal quotes (i.e. ") to single quotes (i.e. ') in comments & definition fields
     */
-    private fun mergeGoTerm(oboTerm: OboTerm): String =
+    private fun mergeOboTerm(oboTerm: OboTerm): String =
         Neo4jConnectionService.executeCypherCommand(
             "CALL apoc.merge.node(['OboTerm'${formatLabels()}], " +
                     " {obo_id: ${oboTerm.id.formatNeo4jPropertyValue()}, " +

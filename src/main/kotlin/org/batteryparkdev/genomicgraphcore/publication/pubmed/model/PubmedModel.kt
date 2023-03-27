@@ -1,10 +1,12 @@
 package org.batteryparkdev.genomicgraphcore.publication.pubmed.model
 
 import ai.wisecube.pubmed.*
-import arrow.core.invalid
+import arrow.core.nel
+import io.kotlintest.matchers.types.shouldBeNull
 import org.apache.commons.csv.CSVRecord
 import org.batteryparkdev.genomicgraphcore.common.CoreModel
 import org.batteryparkdev.genomicgraphcore.common.CoreModelCreator
+import org.batteryparkdev.genomicgraphcore.common.formatNeo4jPropertyValue
 import org.batteryparkdev.genomicgraphcore.common.removeInternalQuotes
 import org.batteryparkdev.genomicgraphcore.neo4j.nodeidentifier.NodeIdentifier
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.dao.PubmedDao
@@ -22,55 +24,59 @@ data class PubmedModel(
     val journalIssue: String,
     val articleTitle: String,
     val abstract: String,
-    val authors: String,
-    val referenceList: List<PubmedReference>,
+    val authors: List<String>,
+    val referenceList: List<Int>,
     val citationSet: Set<Int>,
     val citedByCount: Int
-): CoreModel {
+) : CoreModel {
 
     override fun getNodeIdentifier(): NodeIdentifier = generateNodeIdentifierByModel(
-        PubmedModel, this)
+        PubmedModel, this
+    )
 
-    override fun generateLoadModelCypher(): String = PubmedDao(this).generatePubMedCypher()
+    override fun generateLoadModelCypher(): String = PubmedDao(this).generatePubMedPropertiesCypher()
 
     override fun createModelRelationships() = PubmedDao.modelRelationshipFunctions.invoke(this)
 
     override val idPropertyValue: String
         get() = this.pubmedId.toString()
 
-    override fun isValid(): Boolean = (this.pubmedId >0)
+    override fun isValid(): Boolean = (this.pubmedId > 0)
         .and(this.articleTitle.isNotEmpty())
         .and(this.journalName.isNotEmpty())
 
     // for PubmedModels, the PubMed IDs refer to its PubMed references, not its own id
-    override fun getPubMedIds(): List<Int> = referenceList.stream().map { ref -> ref.referencePubmedId }.toList()
+    override fun getPubMedIds(): List<Int> = referenceList
 
-    override fun getModelGeneSymbol(): String  =""
+    override fun getModelGeneSymbol(): String = ""
 
     override fun getModelSampleId(): String = ""
 
-    companion object: CoreModelCreator {
+    companion object : CoreModelCreator {
         /*
        Function to parse attributes from the PubMedArticle JaXB model object.
        Primary node label is Publication.
        Secondary label should be one of (PubMed, Reference, Citation)
         */
-        fun parsePubMedArticle(pubmedArticle: PubmedArticle,
-                               secondaryLabel: String = " ", parentId: Int = 0): PubmedModel {
+        fun parsePubMedArticle(
+            pubmedArticle: PubmedArticle,
+            secondaryLabel: String = " ", parentId: Int = 0
+        ): PubmedModel {
             val pmid = pubmedArticle.medlineCitation.pmid.getvalue().toInt()
             val pmcid = resolveArticleIdByType(pubmedArticle, "pmc")
             val doiid = resolveArticleIdByType(pubmedArticle, "doi")
             val authors = generateAuthorCaption(pubmedArticle)
             val journalName = pubmedArticle.medlineCitation.article.journal.title
             val journalIssue = resolveJournalIssue(pubmedArticle)
-            val title =  pubmedArticle.medlineCitation.article.articleTitle.getvalue().removeInternalQuotes()
+            val title = pubmedArticle.medlineCitation.article.articleTitle.getvalue().removeInternalQuotes()
             val abstract = resolveAbstract(pubmedArticle).removeInternalQuotes()
             val citations = PubmedRetrievalService.retrieveCitationIds(pmid.toString())
+            val references = resolveReferenceList(pubmedArticle)
 
             return PubmedModel(
                 secondaryLabel, pmid, parentId,
                 pmcid, doiid, journalName, journalIssue, title,
-                abstract, authors, resolveReferenceList(pubmedArticle,pmid),
+                abstract, authors, references,
                 citations, citations.size
             )
         }
@@ -79,13 +85,20 @@ data class PubmedModel(
         Private function to collect the PubMedReferences
         references
          */
-        private fun resolveReferenceList(pubmedArticle: PubmedArticle, parentId: Int): List<PubmedReference> {
-            val refList = mutableListOf<PubmedReference>()
+        private fun resolveReferenceList(pubmedArticle: PubmedArticle): List<Int> {
+            val refList = mutableListOf<Int>()
+            if(!pubmedArticle.pubmedData.referenceList.isNullOrEmpty()) {
                 pubmedArticle.pubmedData.referenceList.stream().forEach { refL ->
                     refL.reference.stream().forEach { ref ->
-                        refList.add(PubmedReference.parsePubMedReference(ref,parentId))
+                        if (ref.articleIdList != null) {
+                      val articleIdList =  ref.articleIdList?.articleId?.filter { id -> id.idType == "pubmed" }
+                              if (!articleIdList.isNullOrEmpty()){
+                                 refList.add( articleIdList[0].getvalue().toInt())
+                              }
+                        }
                     }
                 }
+            }
             return refList
         }
 
@@ -95,7 +108,7 @@ data class PubmedModel(
         private fun resolveAbstract(pubmedArticle: PubmedArticle): String {
             val absTextList = pubmedArticle.medlineCitation.article?.abstract?.abstractText ?: listOf<AbstractText>()
             return when (absTextList.isNotEmpty()) {
-                true ->  absTextList[0].getvalue()
+                true -> absTextList[0].getvalue()
                 false -> ""
             }
         }
@@ -106,29 +119,18 @@ data class PubmedModel(
         private fun resolveArticleIdByType(pubmedArticle: PubmedArticle, type: String): String {
             val articleId = pubmedArticle.pubmedData.articleIdList.articleId.firstOrNull { it.idType == type }
             return when (articleId != null) {
-                true ->articleId.getvalue()
+                true -> articleId.getvalue()
                 false -> ""
             }
         }
+
         /*
-       Function to generate a String with the names of the first
-       two (max) authors plus et al. if > 2 authors
-       e.g.  Smith, Robert; Jones, Mary, et al
+       Function that returns a List of Publication authors
         */
-        private fun generateAuthorCaption(pubmedArticle: PubmedArticle): String {
-            val authorList = pubmedArticle.medlineCitation.article?.authorList?.author
-            if (authorList != null) {
-                val ret = when (authorList.size) {
-                    0 -> ""
-                    1 -> processAuthorName(authorList[0])
-                    2 -> processAuthorName(authorList[0]) + "; " +
-                            processAuthorName(authorList[1])
-                    else -> processAuthorName(authorList[0]) + "; " +
-                            processAuthorName(authorList[1]) + "; et al"
-                }
-                return ret
-            }
-            return ""
+        private fun generateAuthorCaption(pubmedArticle: PubmedArticle): List<String> {
+            val authorList = pubmedArticle.medlineCitation.article?.authorList?.author ?: emptyList()
+            val retList = mutableListOf<String>()
+            return authorList.map { processAuthorName(it) }
         }
 
         /*
@@ -138,23 +140,23 @@ data class PubmedModel(
             val authorNameList = author.lastNameOrForeNameOrInitialsOrSuffixOrCollectiveName
             var name = ""
             if (authorNameList[0] is CollectiveName) {
-                return (authorNameList[0] as CollectiveName).getvalue()
+                return (authorNameList[0] as CollectiveName).getvalue().formatNeo4jPropertyValue()
             }
             val lastName: LastName = authorNameList[0] as LastName
             name = lastName.getvalue()
             if (authorNameList.size > 1) {
-                val name1  = when (authorNameList[1]) {
+                val name1 = when (authorNameList[1]) {
                     is ForeName -> (authorNameList[1] as ForeName).getvalue()
                     is Initials -> (authorNameList[1] as Initials).getvalue()
                     else -> (authorNameList[1] as Suffix).getvalue()
                 }
                 name = "$name, $name1"
             }
-            return name
+            return name.formatNeo4jPropertyValue()
         }
 
         private fun processPagination(page: Pagination): String {
-            val medlinePgn = page.startPageOrEndPageOrMedlinePgn[0] as MedlinePgn
+            val medlinePgn = page.startPageOrEndPageOrMedlinePgn.last() as MedlinePgn
             return medlinePgn.getvalue()
         }
 
@@ -175,10 +177,12 @@ data class PubmedModel(
                         pubmedArticle.medlineCitation.article.paginationOrELocationID[0]
                                 as Pagination
                     )
+
                     is ELocationID -> processELocation(
                         pubmedArticle.medlineCitation.article.paginationOrELocationID[0]
                                 as ELocationID
                     )
+
                     else -> ""
                 }
             }
@@ -205,14 +209,14 @@ data class PubmedModel(
     }
 }
 
-data class ReferenceCitation(val citation: String, val issue: String, val doiUrl: String ="") {
+data class ReferenceCitation(val citation: String, val issue: String, val doiUrl: String = "") {
 
-    fun isValid()  = citation.isNotEmpty()
+    fun isValid() = citation.isNotEmpty()
 
-    companion object{
+    companion object {
         // There are two (2) citation formats (i.e. short and long
-        fun parseCitationFromReference( reference: Reference) =
-            when(reference.citation.contains(';')) {
+        fun parseCitationFromReference(reference: Reference) =
+            when (reference.citation.contains(';')) {
                 true -> processShortCitation(reference)
                 false -> processLongCitation(reference)
             }
@@ -223,41 +227,43 @@ data class ReferenceCitation(val citation: String, val issue: String, val doiUrl
             var url = ""
             reference.citation.split(" ")
                 .filter { it.isNotEmpty() }
-                .forEach {
-                word -> when {
-                    word.startsWith("https") -> url = word
-                    (word[0].isDigit()) -> issue = word
-                    else -> citation += word.plus(" ")
+                .forEach { word ->
+                    when {
+                        word.startsWith("https") -> url = word
+                        (word[0].isDigit()) -> issue = word
+                        else -> citation += word.plus(" ")
+                    }
                 }
-            }
-            //TODO: Remove println after debugging
-            println("Citation: $citation  issue: $issue   url: $url")
-            return ReferenceCitation(citation ,issue, url)
+            return ReferenceCitation(citation, issue, url)
         }
 
         private fun processShortCitation(reference: Reference): ReferenceCitation =
-            ReferenceCitation( reference.citation.substringBefore(';'),
-                reference.citation.substringAfter(';'))
+            ReferenceCitation(
+                reference.citation.substringBefore(';'),
+                reference.citation.substringAfter(';')
+            )
     }
 }
 
-data class PubmedReference(val referencePubmedId: Int, val citation: ReferenceCitation,
-                           val parentId: Int): CoreModel {
+data class PubmedReference(
+    val referencePubmedId: Int, val citation: ReferenceCitation,
+    val parentId: Int
+) : CoreModel {
 
-    companion object: CoreModelCreator {
+    companion object : CoreModelCreator {
         const val PubmedIdType = "pubmed"
 
-        fun resolvePubMedReferenceId(idList: ArticleIdList):Int {
+        fun resolvePubMedReferenceId(idList: ArticleIdList): Int {
             val refId = idList.articleId.firstOrNull() { it.idType == PubmedIdType }
-            return  when (refId != null) {
+            return when (refId != null) {
                 true -> refId.getvalue().toInt()
                 false -> 0
             }
         }
 
-        fun  parsePubMedReference(reference: Reference,parentId: Int) =
+        fun parsePubMedReference(reference: Reference, parentId: Int) =
             PubmedReference(
-                if (reference.articleIdList != null ) resolvePubMedReferenceId(reference.articleIdList) else 0,
+                if (reference.articleIdList != null) resolvePubMedReferenceId(reference.articleIdList) else 0,
                 ReferenceCitation.parseCitationFromReference(reference),
                 parentId  // allows each Reference node to be persisted independently of the PubMed node
             )
@@ -268,30 +274,32 @@ data class PubmedReference(val referencePubmedId: Int, val citation: ReferenceCi
         override val nodename = "reference"
         override val nodelabel: String
             get() = "Publication"
-         override val nodeIdProperty: String
+        override val nodeIdProperty: String
             get() = "pub_id"
         val secondaryLabel = "Reference"
     }
 
-    override fun getNodeIdentifier(): NodeIdentifier = NodeIdentifier(PubmedReference.nodelabel,
-    PubmedReference.nodeIdProperty, idPropertyValue, PubmedReference.secondaryLabel)
+    override fun getNodeIdentifier(): NodeIdentifier = NodeIdentifier(
+        PubmedReference.nodelabel,
+        PubmedReference.nodeIdProperty, idPropertyValue, PubmedReference.secondaryLabel
+    )
 
     override fun generateLoadModelCypher(): String =
-       ReferenceDao(this).generateReferenceCypher()
+        ReferenceDao(this).generateReferenceCypher()
 
     override fun createModelRelationships() = ReferenceDao.modelRelationshipFunctions.invoke(this)
 
     override val idPropertyValue: String
         get() = referencePubmedId.toString()
 
-    override fun isValid(): Boolean  = (referencePubmedId> 0)
+    override fun isValid(): Boolean = (referencePubmedId > 0)
         .and(citation.isValid())
 
     override fun getPubMedIds(): List<Int> = listOf(referencePubmedId)
 
     override fun getModelGeneSymbol(): String = ""
 
-    override fun getModelSampleId(): String  = ""
+    override fun getModelSampleId(): String = ""
 
 }
 

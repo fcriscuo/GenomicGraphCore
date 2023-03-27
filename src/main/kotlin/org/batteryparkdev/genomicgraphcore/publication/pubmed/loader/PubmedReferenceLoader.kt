@@ -10,17 +10,17 @@ import kotlinx.coroutines.runBlocking
 import org.batteryparkdev.genomicgraphcore.common.CoreModel
 import org.batteryparkdev.genomicgraphcore.common.service.Neo4jPropertiesService
 import org.batteryparkdev.genomicgraphcore.neo4j.service.Neo4jConnectionService
-import org.batteryparkdev.genomicgraphcore.publication.getAllPlaceholderPubMedNodeIds
+import org.batteryparkdev.genomicgraphcore.publication.getAllPublicationPlaceholderPubIdsByType
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.model.PubmedModel
 import org.batteryparkdev.genomicgraphcore.publication.pubmed.service.PubmedRetrievalService
 
-class PubMedModelLoader() {
+class PubMedReferenceLoader() {
 
-    // resolve all the Publication/PubMed nodes that are currently in placeholder status
+    // resolve all the Publication/Reference nodes that are currently in placeholder status
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun CoroutineScope.generatePublicationBatch() =
+    private fun CoroutineScope.generatePublicationPropertiesBatch() =
         produce<Set<String>> {
-            getAllPlaceholderPubMedNodeIds().chunked(60).asIterable().forEach {
+            getAllPublicationPlaceholderPubIdsByType("refs").chunked(100).asIterable().forEach {
                 send(it.toSet())
                 delay(20L)
             }
@@ -48,53 +48,32 @@ class PubMedModelLoader() {
         }
 
     /*
-   Load the PubMed nodes object implementations into the Neo4j database
+   Load the Reference nodes object implementations into the Neo4j database
     */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private  fun CoroutineScope.loadPubMedNodes(models: ReceiveChannel<CoreModel>) =
+    private  fun CoroutineScope.loadPubMedProperties(models: ReceiveChannel<CoreModel>) =
         produce<CoreModel> {
             for (model in models) {
-                // load the model data into Neo4j, then complete its relationships to
-                // other nodes
-                // The two operations are performed in the same coroutine to avoid race conditions
                 Neo4jConnectionService.executeCypherCommand(model.generateLoadModelCypher())
-                model.createModelRelationships()
                 send(model)
                 delay(20)
             }
         }
-    /*
-    Load the Reference nodes into the database
-     */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private  fun CoroutineScope.loadReferenceNodes(models: ReceiveChannel<CoreModel>) =
-        produce<CoreModel> {
-            for (model in models){
-                if(model is PubmedModel && model.referenceList.isNotEmpty()){
-                    model.referenceList.forEach { ref -> run {
-                        Neo4jConnectionService.executeCypherCommand(ref.generateLoadModelCypher())
-                        ref.createModelRelationships()
-                    } }
-                }
-                send(model)
-                delay(20L)
-            }
-        }
 
-    fun loadPublicationNodes() = runBlocking{
-        val models = loadReferenceNodes(loadPubMedNodes(generatePubMedModels(generatePublicationBatch())))
+    fun loadPublicationReferenceNodes() = runBlocking{
+        val models = loadPubMedProperties(generatePubMedModels(generatePublicationPropertiesBatch()))
         for (model in models){
             if (model is PubmedModel) {
-                println("PubMed Id ${model.pubmedId}  Title: ${model.articleTitle}  Reference count = ${model.referenceList.size}")
+                println("Reference PMID: ${model.pubmedId}  Title: ${model.articleTitle}  Reference count = ${model.referenceList.size}")
             }
         }
     }
 }
 
 fun main() {
-    println("Loading data into the Neo4j ${Neo4jPropertiesService.neo4jDatabase} database")
+    println("Loading reference node data into the Neo4j ${Neo4jPropertiesService.neo4jDatabase} database")
     println("There will be a 20 second delay. If this is not the intended database, hit CTRL-C to terminate")
    // Thread.sleep(20_000L)
     println("Proceeding....")
-    PubMedModelLoader().loadPublicationNodes()
+    PubMedReferenceLoader().loadPublicationReferenceNodes()
 }
