@@ -10,7 +10,7 @@ class GeneOntologyLoader(): OntologyFileLoader() {
     override val ontologyName: String
         get() = "gene_ontology"
     override val labelList
-        get() = listOf<String>("GoTerm","OboTerm")
+        get() = listOf<String>("GoTerm")
 
     override fun loadOntologyFile() {
         val result = FtpClient.retrieveRemoteFileByFtpUrl(FilesPropertyService.geneontologyDownloadUrl, localFilename)

@@ -111,17 +111,22 @@ author: Marcin Moskała
     }
 
     // detach and delete specified nodes in database
-    fun detachAndDeleteNodesByName(nodeName: String) {
+    fun detachAndDeleteNodesByName(label: String) {
         val beforeCount = Neo4jConnectionService.executeCypherCommand(
-            "MATCH (n: $nodeName) RETURN COUNT (n)"
+            "MATCH (n: $label) RETURN COUNT (n)"
         )
+        // deleting a large collection of nodes can exceed available memory
+        // delete in batches of 1000
         Neo4jConnectionService.executeCypherCommand(
-            "MATCH (n: $nodeName) DETACH DELETE (n);"
+         "CALL apoc.periodic.iterate( " +
+                 "MATCH ($label) RETURN $label " +
+                 "DETACH DELETE $label " +
+                 " {batchSize:1000, parallel:false})"
         )
         val afterCount = Neo4jConnectionService.executeCypherCommand(
-            "MATCH (n: $nodeName) RETURN COUNT (n)"
+            "MATCH (n: $label) RETURN COUNT (n)"
         )
-        println("Deleted $nodeName nodes, before count=${beforeCount.toString()}" +
+        println("Deleted $label nodes, before count=$beforeCount" +
                     "  after count=$afterCount")
     }
 

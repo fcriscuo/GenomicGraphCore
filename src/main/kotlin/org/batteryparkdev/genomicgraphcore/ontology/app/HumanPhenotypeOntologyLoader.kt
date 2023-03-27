@@ -15,7 +15,7 @@ class HumanPhenotypeOntologyLoader( ): OntologyFileLoader() {
     override val ontologyName: String
         get() = "human_phenotype_ontology"
     override val labelList
-        get() = listOf<String>("HumanPhenotypeTerm","OboTerm")
+        get() = listOf<String>("HumanPhenotypeTerm")
 
     override fun loadOntologyFile() {
         val result = FtpClient.retrieveRemoteFileByFtpUrl(FilesPropertyService.humanPhenotypeDownloadUrl, localFilename)

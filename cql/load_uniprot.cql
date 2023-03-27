@@ -46,9 +46,6 @@ MATCH(hgnc:Hgnc{hgnc_id:uni.hgnc_id})
 SET uni.gene_symbol = hgnc.gene_symbol
 ;
 
-
-
-
 // AlphaFold URL
 MATCH (uni:UniProtEntry) WHERE uni.alpha_fold_id  IS NOT NULL
 SET uni.alphafold_url = genomiccore.resolveAlphaFoldUrl(uni.alpha_fold_id)

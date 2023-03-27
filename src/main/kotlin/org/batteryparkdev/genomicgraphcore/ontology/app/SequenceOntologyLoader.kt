@@ -8,11 +8,11 @@ The ontology file must be downloaded from https://github.com/The-Sequence-Ontolo
 class SequenceOntologyLoader( ): OntologyFileLoader() {
 
     override val localFilename: String
-        get() = "/./data/so/so.obo"
+        get() = "./data/so/so.obo"
     override val ontologyName: String
         get() = "sequence_ontology"
     override val labelList
-        get() = listOf<String>("GoTerm","OboTerm")
+        get() = listOf<String>("SequenceTerm")
 
     override fun loadOntologyFile() {
         loadOntologyData()

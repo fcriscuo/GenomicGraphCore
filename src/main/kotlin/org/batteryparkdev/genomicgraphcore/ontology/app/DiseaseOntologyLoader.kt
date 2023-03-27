@@ -10,7 +10,7 @@ class DiseaseOntologyLoader(): OntologyFileLoader() {
     override val ontologyName: String
         get() = "disease_ontology"
     override val labelList
-        get() = listOf<String>("GoTerm","OboTerm")
+        get() = listOf<String>("DiseaseOntologyTerm")
 
     override fun loadOntologyFile() {
         val result = FtpClient.retrieveRemoteFileByFtpUrl(FilesPropertyService.diseaseOntologyDownloadUrl, localFilename)
