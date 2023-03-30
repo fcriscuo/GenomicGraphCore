@@ -2,18 +2,18 @@
 CALL apoc.periodic.iterate('
 CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/UniProt/uniprot_20Jan2023.tsv", { header:true, sep:"TAB",
 mapping:{
-     `Protein names`: {array:true, arraySep:";", name:"protein_names"},
-     `Gene Names`: {array:true, arraySep:";", name:"gene_names"},
-     `Interacts with`: {array:true, arraySep:";", name:"interacts_with"},
-     `Gene Ontology IDs`: {array:true, arraySep:";", name:"gene_ontology_ids"},
-     `PubMed ID`: {array:true, arraySep:";", name:"pubmed_ids"},
-     `EMBL`: {array:true, arraySep:";", name:"embl_ids"},
-     `AlphaFoldDB`: {array:true, arraySep:";", name:"alpha_fold_ids"},
-     `PDB`: {array:true, arraySep:";", name:"pdb"},
-     `dbSNP`: {array:true, arraySep:";", name:"dbSNPs"},
-     `HGNC`: {array:true, arraySep:";", name:"hgnc_ids"},
-     `Reactome`: {array:true, arraySep:";", name:"reactome_id"},
-     `Pharos`: {array:true, arraySep:";", name:"pharos_id"}
+     `Protein names`: {array:true, arraySep:";"},
+     `Gene Names`: {array:true, arraySep:";"},
+     `Interacts with`: {array:true, arraySep:";"},
+     `Gene Ontology IDs`: {array:true, arraySep:";"},
+     `PubMed ID`: {array:true, arraySep:";"},
+     `EMBL`: {array:true, arraySep:";"},
+     `AlphaFoldDB`: {array:true, arraySep:";"},
+     `PDB`: {array:true, arraySep:";"},
+     `dbSNP`: {array:true, arraySep:";"},
+     `HGNC`: {array:true, arraySep:";"},
+     `Reactome`: {array:true, arraySep:";"},
+     `Pharos`: {array:true, arraySep:";"}
 }
 )
 YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo

@@ -47,7 +47,7 @@ CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DisGeNet/disease_mappings
 )
 YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
 ','
-WHERE NOT nodeRecord.diseaseId IS NULL
+WHERE nodeRecord.vocabulary = "DO"
 MERGE (dis:DisgenetDisease {disease_id: nodeRecord.diseaseId})
 SET dis.disease_name = nodeRecord.name,
   dis.vocabulary = nodeRecord.vocabulary,
@@ -60,13 +60,13 @@ SET dis.disease_name = nodeRecord.name,
 CALL apoc.periodic.iterate('
 CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DisGeNet/disease_mappings_to_attributes.tsv",
 { header:true,  sep:"TAB",
-mapping{
-  `diseaseClassNameMSH`: {array:true, arraySep:";", name:"disease_class_name_msh",
-  `diseaseClassMSH`: {array:true, arraySep:";", name:"disease_class_msh",
-  `hpoClassId`: {array:true, arraySep:";", name:"hpo_class_ids",
-  `hpo_class_name`: {array:true, arraySep:";", name:"hpo_class_names",
-  `doClassName`: {array:true, arraySep:";", name:"do_class_names",
-  `doClassId`: {array:true, arraySep:";", name:"do_class_ids"
+mapping:{
+  `diseaseClassNameMSH`: {array:true, arraySep:";"},
+  `diseaseClassMSH`: {array:true, arraySep:";"},
+  `hpoClassId`: {array:true, arraySep:";"},
+  `hpo_class_name`: {array:true, arraySep:";"},
+  `doClassName`: {array:true, arraySep:";"},
+  `doClassId`: {array:true, arraySep:";"}
   }
 }
 )
@@ -98,7 +98,20 @@ MERGE (dis:DisgenetDisease {disease_id: nodeRecord.diseaseId})
 ON MATCH SET dis.disease_type = nodeRecord.diseaseType,
   dis.disease_semantic_type = nodeRecord.diseaseSemanticType,
   dis.number_of_genes = toInteger(nodeRecord.NofGenes),
-  dis.number_of_pmids = toInteger(nodeRecord.NofPmids),
+  dis.number_of_pmids = toInteger(nodeRecord.NofPmids)
 ',
 {batchSize:4000, iterateList:true, parallel:true});
 
+// DisGenetDisease -> HPO relationship
+MATCH (dis:DisgenetDisease) where dis.hpo_class_ids IS NOT NULL
+UNWIND dis.hpo_class_ids AS hpo_id
+MATCH (hpo:HumanPhenotypeTerm) WHERE hpo.obo_id = hpo_id
+MERGE (dis)-[r:HAS_HPO_TERM]->(hpo)
+
+
+// DidGenetDisease -> DiseaseOntology
+MATCH (dis:DisgenetDisease) where dis.do_class_ids IS NOT NULL
+UNWIND dis.do_class_ids AS class_id
+MATCH (do:DiseaseOntologyTerm) where do.obo_id = class_id
+MERGE (dis)-[r:HAS_DISEASE_ONTOLOGY_TERM]-(do)
+;

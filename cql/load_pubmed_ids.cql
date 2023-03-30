@@ -1,3 +1,22 @@
+
+// GenomicEntity -> Publication/PubMed relationship
+// Create a Publication placeholder node if Publication is novel
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DAVID/GeneSymbol/OFFICIAL_GENE_SYMBOL2PUBMED_ID.tsv", { header:true,sep:"TAB"}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+WHERE NOT nodeRecord.`PMID` IS NULL
+MATCH (ge:GenomicEntity) WHERE ge.gene_symbol = nodeRecord.`GeneSymbol`
+MERGE (p:Publication {pub_id: toInteger(nodeRecord.`PMID`)})
+  ON CREATE
+  SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),
+  p.needs_properties=true, p.needs_references=true
+SET p:PubMed
+MERGE (ge)-[r:HAS_PUBLICATION]->(p)
+',
+{batchSize:4000, iterateList:true, parallel:true});
+
 // UniProtEntry PubMed placeholders
 MATCH (uni:UniProtEntry) WHERE uni.pubmed_ids <> ' '
 UNWIND uni.pubmed_ids AS pubmed_id

@@ -3,12 +3,12 @@ CALL apoc.periodic.iterate('
 CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/NHGRI/NCBI_Clinical_Genomic_Database.tsv",
 { header:true,  sep:"TAB",
   mapping:{
-    `CONDITION`: {array:true, arraySep:";",name:"conditions"},
-    `ALLELIC CONDITIONS`: {array:true, arraySep:";",name:"allelic_conditions"},
-    `MANIFESTATION CATEGORIES`: {array:true, arraySep:";",name:"manifestation_categories"},
-    `INTERVENTION CATEGORIES`: {array:true, arraySep:";",name:"intervention_categories"},
-    `INTERVENTION/RATIONALE`: {array:true, arraySep:";",name:"iintervention_rationales"},
-    `REFERENCES`: {array:true, arraySep:";",name:"references"}
+    `CONDITION`: {array:true, arraySep:";"},
+    `ALLELIC CONDITIONS`: {array:true, arraySep:";"},
+    `MANIFESTATION CATEGORIES`: {array:true, arraySep:";"},
+    `INTERVENTION CATEGORIES`: {array:true, arraySep:";"},
+    `INTERVENTION/RATIONALE`: {array:true, arraySep:";"},
+    `REFERENCES`: {array:true, arraySep:";"}
   }
 }
 )

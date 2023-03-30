@@ -2,9 +2,9 @@ CALL apoc.periodic.iterate('
 CALL apoc.load.csv("/Volumes/SSD870/GenomicCoreData/Entrez/Gene/gene_info_9606.tsv",
 { header:true,  sep:"TAB",
   mapping: {
-  `Synonyms`: {array:true, arraySep:"|",name:"synonyms"},
-  `dbXrefs`: {array:true, arraySep:"|",name:"db_xrefs"},
-  `Other_designations`: {array:true, arraySep:"|",name:"other_designations"}
+  `Synonyms`: {array:true, arraySep:"|"},
+  `dbXrefs`: {array:true, arraySep:"|"},
+  `Other_designations`: {array:true, arraySep:"|"}
   }
  }
 )

@@ -1,14 +1,55 @@
 
-// Separate defining relationships from define nodes and properties so that they
+// Separate script for defining relationships from defining nodes and properties so that the
 // data files can be loaded in any order
 //
+
+// GenomicEntity -> GeneOntology Biological Process
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DAVID/GeneSymbol/OFFICIAL_GENE_SYMBOL2GOTERM_BP_ALL.tsv",
+{ header:true,  sep:"TAB"}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+MATCH (ge: GenomicEntity) WHERE ge.gene_symbol = NodeRecord.`GeneSymbol`
+MATCH (go:GoTerm) WHERE WHERE go.obo_id = NodeRecord.`GoTerm`
+MERGE (ge)-[r:HAS_GO_TERM {type:"Biological Process"}]->(go)
+',
+{batchSize:4000, iterateList:true, parallel:true});
+
+// GenomicEntity -> GeneOntology Molecular Function
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DAVID/GeneSymbol/OFFICIAL_GENE_SYMBOL2GOTERM_MF_ALL.tsv",
+{ header:true,  sep:"TAB"}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+MATCH (ge: GenomicEntity) WHERE ge.gene_symbol = NodeRecord.`GeneSymbol`
+MATCH (go:GoTerm) WHERE WHERE go.obo_id = NodeRecord.`GoTerm`
+MERGE (ge)-[r:HAS_GO_TERM {type:"Molecular Function"}]->(go)
+',
+{batchSize:4000, iterateList:true, parallel:true});
+
+// GenomicEntity -> GeneOntology Cellular Component
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DAVID/GeneSymbol/OFFICIAL_GENE_SYMBOL2GOTERM_CC_ALL.tsv",
+{ header:true,  sep:"TAB"}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+MATCH (ge: GenomicEntity) WHERE ge.gene_symbol = NodeRecord.`GeneSymbol`
+MATCH (go:GoTerm) WHERE WHERE go.obo_id = NodeRecord.`GoTerm`
+MERGE (ge)-[r:HAS_GO_TERM {type:"Cellular Component"}]->(go)
+',
+{batchSize:4000, iterateList:true, parallel:true});
+
+
 // relationship to UniProt via mapa_geneid_4_uniprot_crossref.tsv
 // UniProt -> DisGeNetGene
 CALL apoc.periodic.iterate('
 CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DisGeNet/mapa_geneid_4_uniprot_crossref.tsv", 
 { header:true,  sep:"TAB"}
 )
-YIELD nodeRecordNo, map AS nodeRecord RETURN nodeRecord, nodeRecordNo
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
 ','
 MATCH (gene:DisgenetGene) WHERE ltrim(gene.ncbi_gene_id) = ltrim(nodeRecord.GENEID)
 MATCH (uni:UniProtEntry) WHERE uni.entry_id = nodeRecord.UniProtKB
@@ -23,18 +64,18 @@ MERGE (ge)-[r:HAS_HGNC_ENTRY]->(hgnc)
 ;
 
 
-//  HGNC -> DisGenetGene relationship
+//  GenomicEntity -> DisGenetGene relationship
 MATCH (gene:DisgenetGene) WHERE gene.gene_symbol IS NOT NULL
-MATCH(hgnc:Hgnc) WHERE hgnc.gene_symbol = gene.gene_symbol
-MERGE (hgnc) - [r:HAS_DISGENET_GENE] -> (gene)
+MATCH(ge:GenomicEntity) WHERE ge.gene_symbol = gene.gene_symbol
+MERGE (ge) - [r:HAS_DISGENET_GENE] -> (gene)
 ;
 
-// DisGenetGene -> DisgenetVariant relationship
+// DisGenetGene -> DisGenetVariant relationship
 CALL apoc.periodic.iterate('
 CALL apoc.load.csv("Volumes/Sea5TBExt/GenomicCoreData/DisGeNet/dbsnp_variant_to_gene_mappings.tsv",
 { header:true,  sep:"TAB"}
 )
-YIELD nodeRecordNo, map AS nodeRecord RETURN nodeRecord, nodeRecordNo
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
 ','
 MATCH(gene:DisgenetGene) WHERE gene.gene_symbol = nodeRecord.geneSymbol
 MATCH(var:DisgenetVariant) WHERE var.snp_id = nodeRecord.snpId
@@ -42,74 +83,44 @@ MERGE (gene)-[r1:HAS_DISGENET_VARIANT{source:nodeRecord.sourceId}]->(var)
 ',
 {batchSize:4000, iterateList:true, parallel:true});
 
-// DisGenetDisease -> HPO relationship
-MATCH (dis:DisgenetDisease) where dis.hpo_class_id IS NOT NULL
-UNWIND dis.hpo_class_id AS hpo_id
-MATCH (hpo:HpTerm) WHERE hpo.obo_id = hpo_id
-MERGE (dis)-[r:HAS_HPO_TERM]->(hpo)
 
-// DisGenetGene -> DisgenetDisease relationship (via EntrezGene)
-// EntrezGene -> DisGenetGene
-// edit downloaded file to split disease id & disease name
-// add header: GeneId DiseaseId DiseaseName
+// DisGenetGene -> DisGenetDisease relationship (via EntrezGene)
+// edit downloaded file to split disease id & disease name:
+//    cd /Volumes/Sea5TBExt/GenomicCoreData/DAVID/EntrezGene
+//    sed 's/~/\'$'\t/g' ENTREZ_GENE_ID2DISGENET.txt >  ENTREZ_GENE_ID2DISGENET.tsv
+//    add header: GeneId<TAB>DiseaseId<TAB>>DiseaseName
 CALL apoc.periodic.iterate('
-CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DAVID/ENTREZ_GENE/ENTREZ_GENE_ID2DISGENET.txt",
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DAVID/EntrezGene/ENTREZ_GENE_ID2DISGENET.tsv",
 { header:true,  sep:"TAB"}
 )
 YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
 ','
-MATCH (e:EntrezGene) where e.gene_id = nodeRecord.GeneID
-MATCH (dg:DisgenetGene) where dg.ncbi_gene_id = e.entrez_id
-MATCH (d:DisgenetDisease) WHERE d.disease_id = nodeRecord.DiseaseID
+MATCH (e:EntrezGene) where e.gene_id = nodeRecord.GeneId
+MATCH (dg:DisgenetGene) where dg.gene_id = e.gene_id
+MATCH (d:DisgenetDisease) WHERE d.disease_id = nodeRecord.DiseaseId
 MERGE (dg)-[r1:HAS_DISGENET_DISEASE]->(d)
-MERGE (e)-[r2:HAS_DISGENET_GENE]->(dg)
 ',
 {batchSize:4000, iterateList:true, parallel:true});
 
-// EntrezGene -> HGNC relationship
+// GenomicEntity -> EntrezGene
 MATCH (eg:EntrezGene) WHERE eg.gene_symbol IS NOT NULL
-MATCH(hgnc:Hgnc{gene_symbol:eg.gene_symbol})
-MERGE (eg)-[r:HAS_HGNC]->(hgnc)
+MATCH(ge:GenomicEntity) WHERE ge.gene_symbol = eg.gene_symbol
+MERGE (ge)-[r:HAS_ENTREZ_GENE]->(eg)
 ;
 
-// EntrezGene -> GO term relationship
-CALL apoc.periodic.iterate('
-CALL apoc.load.csv("Volumes/Sea5TBExt/GenomicCoreData/Entrez/Gene/human_gene2go.tsv",
-{ header:true,  sep:"TAB"}
-)
-YIELD nodeRecordNo, map AS nodeRecord RETURN nodeRecord, nodeRecordNo
-','
-MATCH (eg:EntrezGene) WHERE eg.gene_id = nodeRecord.GeneID
-MATCH (go:GoTerm {obo_id: nodeRecord.GO_ID})
-MERGE (eg)-[r1:HAS_GO_TERM{qualifier: nodeRecord.Qualifier}]->(go)
-',
-{batchSize:4000, iterateList:true, parallel:true});
-// filter human (i.e. tax id 9606) from gene2go file from NCBI
-// grep "^9606\t" gene2go > human_gene2go.tsv
+// GenomicEntity -> NHGRI GENE
+MATCH (gene:NHGRI_Gene) WHERE gene.gene_symbol IS NOT NULL
+MATCH (ge:GenomicEntity) WHERE ge.gene_symbol = gene.gene_symbol
+MERGE (ge)-[r1:HAS_NHGRI_GENE]->(hgene)
 
 
-// NHGRI_GENE -> HGNC
-MATCH (gene:NHGRI_Gene) WHERE gene.hgnc_id IS NOT NULL
-MATCH (hgnc:Hgnc) WHERE hgnc.hgnc_id = gene.hgnc_id
-MERGE (gene)-[r1:HAS_HGNC]->(hgnc)
-
-//NHGRI_GENE -> ENTREZ_GENE
-MATCH (gene:NHGRI_Gene) WHERE gene.entrez_id IS NOT NULL
-MATCH (entrez:EntrezGene) WHERE entrez.entrez_id = gene.entrez_id
-MERGE (entrez)-[r:HAS_NHGRI_GENE]->(gene)
-
-// UniProtEntry -> HGNC
+// GenomicEntity -> UniProtEntry relationship
 MATCH (uni:UniProtEntry) WHERE uni.hgnc_id <> ' '
 MATCH(hgnc:Hgnc{hgnc_id:uni.hgnc_id})
-MERGE (uni) - [r:HAS_HGNC] -> (hgnc)
+MATCH (ge:GenomicEntity) WHERE ge.gene_symbol = hgnc.gene_symbol
+MERGE (ge) - [r:HAS_UNIPROT_ENTRY] -> (uni)
 ;
 
-// UniProtEntry -> Gene Ontology relationship
-MATCH (uni:UniProtEntry) WHERE uni.gene_ontology_ids <> ' '
-UNWIND uni.gene_ontology_ids AS go_id
-MATCH(obo: OboTerm) WHERE obo.obo_id = go_id
-MERGE (uni) -[r:HAS_GENE_ONTOLOGY]-> (obo)
-;
 
 // UniProtEntry -> UniProtEntry relationship (self-interaction)
 MATCH (uni:UniProtEntry) WHERE uni.interacts_with IS NOT NULL
