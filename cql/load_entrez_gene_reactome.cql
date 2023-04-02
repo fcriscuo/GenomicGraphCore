@@ -14,5 +14,5 @@ WITH react, nodeRecord
 MATCH (eg:EntrezGene) WHERE eg.gene_id = nodeRecord.EntrezID
 MERGE (eg)-[r:HAS_REACTOME]-(react)
 ',
-{batchSize:1000, iterateList:true, parallel:true});
+{batchSize:1000, iterateList:true});
 

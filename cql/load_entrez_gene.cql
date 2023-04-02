@@ -1,5 +1,5 @@
 CALL apoc.periodic.iterate('
-CALL apoc.load.csv("/Volumes/SSD870/GenomicCoreData/Entrez/Gene/gene_info_9606.tsv",
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/Entrez/Gene/Homo_sapiens_gene_info.tsv",
 { header:true,  sep:"TAB",
   mapping: {
   `Synonyms`: {array:true, arraySep:"|"},
@@ -26,6 +26,6 @@ SET eg.ncbi_gene_url = genomiccore.resolveNcbiGeneUrl(ltrim(nodeRecord.GeneID)),
   eg.nomenclature_status = nodeRecord.Nomenclature_status,
   eg.other_designations = nodeRecord.Other_designations
 ',
-{batchSize:4000, iterateList:true, parallel:true});
+{batchSize:4000, iterateList:true});
 
 

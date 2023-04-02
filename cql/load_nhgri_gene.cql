@@ -12,23 +12,23 @@ CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/NHGRI/NCBI_Clinical_Genom
   }
 }
 )
-YIELD nodeRecordNo, map AS nodeRecord RETURN nodeRecord, nodeRecordNo
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
 ','
 WHERE NOT nodeRecord.GENE IS NULL
 MERGE (gene:NHGRI_Gene:Gene{gene_symbol: nodeRecord.GENE})
 SET gene.hgnc_id = apoc.text.join(["HGNC",nodeRecord.`HGNC ID`],":"),
   gene.nhgri_gene_url = genomiccore.resolveNhgriGeneUrl(nodeRecord.GENE),
   gene.entrez_id = nodeRecord.`ENTREZ GENE ID`,
-  gene.entrez_gene_url= genomiccore.resolveEntezUrl(gene.entrez_id),
+  gene.entrez_gene_url= replace("https://www.ncbi.nlm.nih.gov/gene/?term=XXXX","XXXX",gene.entrez_id),
   gene.conditions = nodeRecord.CONDITION,
   gene.inheritance = nodeRecord.INHERITANCE,
   gene.age_group = nodeRecord.`AGE GROUP`,
   gene.allelic_conditions = nodeRecord.`ALLELIC CONDITIONS`,
   gene.manifestation_categories = nodeRecord.`MANIFESTATION CATEGORIES`,
-  gene.intervention_categories = nodeRecord.`INTERVENTION CATEGORIES`),
+  gene.intervention_categories = nodeRecord.`INTERVENTION CATEGORIES`,
   gene.comments = nodeRecord.COMMENTS,
   gene.intervention_rationales = nodeRecord.`INTERVENTION/RATIONALE`,
-  gene.pub_ids = nodeRecord.REFERENCES,)
+  gene.pub_ids = nodeRecord.REFERENCES
 ',
-{batchSize:4000, iterateList:true, parallel:true});
+{batchSize:4000, iterateList:true});
 

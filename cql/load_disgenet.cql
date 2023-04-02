@@ -17,7 +17,7 @@ SET gene.gene_symbol = nodeRecord.geneSymbol,
   gene.number_of_diseases = toInteger(nodeRecord.NofDiseases),
   gene.number_of_pmids = toInteger(nodeRecord.NofPmids)
 ',
-{batchSize:4000, iterateList:true, parallel:true});
+{batchSize:4000, iterateList:true});
 
 
 // DisGeNet Variants
@@ -38,7 +38,7 @@ var.dpi = toFloat(nodeRecord.DPI),
 var.number_of_diseases = toInteger(nodeRecord.NofDiseases),
 var.number_of_pmids = toInteger(nodeRecord.NofPmids)
 ',
-{batchSize:4000, iterateList:true, parallel:true});
+{batchSize:4000, iterateList:true});
 
 // DisGenet Disease Mappings
 CALL apoc.periodic.iterate('
@@ -54,7 +54,7 @@ SET dis.disease_name = nodeRecord.name,
   dis.code = nodeRecord.code,
   dis.vocabulary_name = nodeRecord.vocabularyName
 ',
-{batchSize:4000, iterateList:true, parallel:true});
+{batchSize:4000, iterateList:true});
 
 // supplement properties with data from disease_mappings_to_attributes.tsv file
 CALL apoc.periodic.iterate('
@@ -84,7 +84,7 @@ SET dis.disease_type = nodeRecord.type,
   dis.umls_semantic_type_id = nodeRecord.umlsSemanticTypeId,
   dis.umls_semantic_type_name = nodeRecord.umlsSemanticTypeName
 ',
-{batchSize:4000, iterateList:true, parallel:true});
+{batchSize:4000, iterateList:true});
 
 // supplement properties with data from disease_associations.tsv file
 CALL apoc.periodic.iterate('
@@ -100,7 +100,7 @@ ON MATCH SET dis.disease_type = nodeRecord.diseaseType,
   dis.number_of_genes = toInteger(nodeRecord.NofGenes),
   dis.number_of_pmids = toInteger(nodeRecord.NofPmids)
 ',
-{batchSize:4000, iterateList:true, parallel:true});
+{batchSize:4000, iterateList:true});
 
 // DisGenetDisease -> HPO relationship
 MATCH (dis:DisgenetDisease) where dis.hpo_class_ids IS NOT NULL
@@ -115,3 +115,16 @@ UNWIND dis.do_class_ids AS class_id
 MATCH (do:DiseaseOntologyTerm) where do.obo_id = class_id
 MERGE (dis)-[r:HAS_DISEASE_ONTOLOGY_TERM]-(do)
 ;
+
+// DisGenetGene -> DisGenetVariant relationship
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DisGeNet/dbsnp_variant_to_gene_mappings.tsv",
+{ header:true,  sep:"TAB"}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+MATCH(gene:DisgenetGene) WHERE gene.gene_symbol = nodeRecord.geneSymbol
+MATCH(var:DisgenetVariant) WHERE var.snp_id = nodeRecord.snpId
+MERGE (gene)-[r1:HAS_DISGENET_VARIANT{source:nodeRecord.sourceId}]->(var)
+',
+{batchSize:4000, iterateList:true});

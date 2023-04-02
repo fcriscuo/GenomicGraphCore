@@ -14,6 +14,7 @@ mapping:{
      `HGNC`: {array:true, arraySep:";"},
      `Reactome`: {array:true, arraySep:";"},
      `Pharos`: {array:true, arraySep:";"}
+     }
 }
 )
 YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
@@ -29,30 +30,44 @@ SET  uni.entry_name =nodeRecord.`Entry Name`,
   uni.interacts_with = nodeRecord.`Interacts with`,
   uni.gene_ontology_ids = nodeRecord.`Gene Ontology IDs`,
   uni.pubmed_ids=nodeRecord.`PubMed ID`,
-  uni.embl_ids=nodeRecord.EMBL,
-  uni.alpha_fold_ids = nodeRecord.AlphaFoldDB,
-  uni.pdb = nodeRecord.PDB,,
-  uni.dbSNPs = nodeRecord.dbSNP,
-  uni.hgnc_ids = nodeRecord.HGNC,
-  uni.reactome_id = nodeRecord.Reactome,
-  uni.pharos_id = nodeRecord.Pharos
+  uni.embl_ids=nodeRecord.`EMBL`,
+  uni.alpha_fold_ids = nodeRecord.`AlphaFoldDB`,
+  uni.pdb = nodeRecord.`PDB`,
+  uni.dbSNPs = nodeRecord.`dbSNP`,
+  uni.hgnc_ids = nodeRecord.`HGNC`,
+  uni.reactome_id = nodeRecord.`Reactome`,
+  uni.pharos_id = nodeRecord.`Pharos`
 ',
-{batchSize:1000, iterateList:true, parallel:true});
+{batchSize:1000, iterateList:true});
 
 // set the gene_symbol property for a UniProt entry based on its
 // related HGNC
-MATCH (uni:UniProtEntry) WHERE uni.hgnc_id <> ' '
-MATCH(hgnc:Hgnc{hgnc_id:uni.hgnc_id})
+MATCH (uni:UniProtEntry) WHERE uni.hgnc_ids  IS NOT NULL
+MATCH(hgnc:Hgnc) WHERE hgnc.hgnc_id = uni.hgnc_ids[0]
 SET uni.gene_symbol = hgnc.gene_symbol
 ;
 
 // AlphaFold URL
-MATCH (uni:UniProtEntry) WHERE uni.alpha_fold_id  IS NOT NULL
-SET uni.alphafold_url = genomiccore.resolveAlphaFoldUrl(uni.alpha_fold_id)
+MATCH (uni:UniProtEntry) WHERE uni.alpha_fold_ids  IS NOT NULL
+SET uni.alpha_fold_urls = []
+WITH uni
+UNWIND uni.alpha_folds_ids as alpha_id
+WITH alpha_id, uni
+SET uni.alpha_fold_urls = uni.alpha_fold_urls + genomiccore.resolveAlphaFoldUrl(alpha_id)
+;
 
 //dbSnp URLs
 MATCH (uni:UniProtEntry) WHERE uni.dbSNPs IS NOT NULL
 SET uni.dbSnpUrlList = []
+WITH uni
 UNWIND uni.dbSnps AS snp
 SET uni.dbSnpList = uni.dbSnpList + genomiccore.resolvedbSnpUrl(snp)
+;
+
+// UniProtEntry -> UniProtEntry relationship (self-interaction)
+MATCH (uni:UniProtEntry) WHERE uni.interacts_with IS NOT NULL
+UNWIND uni.interacts_with AS target_id
+WITH uni, target_id
+MATCH (target:UniProtEntry) WHERE  target.entry_id = target_id
+MERGE (uni)-[r:INTERACTS_WITH]->(target)
 ;

@@ -1,5 +1,5 @@
 CALL apoc.periodic.iterate('
-CALL apoc.load.csv("/Volumes/Seat5TBExt/GenomicCoreData/Reactome/UniProt2ReactomeReactions_human.tsv",
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/Reactome/UniProt2ReactomeReactions_human.tsv",
 { header:true,  sep:"TAB"}
 )
 YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
@@ -13,5 +13,5 @@ WITH react, nodeRecord
 MATCH (uni:UniProtEntry) WHERE uni.entry_id = nodeRecord.UniProtID
 MERGE (uni)-[r:HAS_REACTOME]->(react);
 ',
-{batchSize:1000, iterateList:true, parallel:true});
+{batchSize:1000, iterateList:true});
 

@@ -12,6 +12,7 @@ Kotlin application to load ontology and core data files
  */
 
 private val cqlFiles = listOf<String>(
+    "./cql/load_genomic_entity.cql",
     "./cql/load_hgnc.cql",
     "./cql/load_entrez_gene.cql",
     "./cql/load_entrez_gene_reactome.cql",

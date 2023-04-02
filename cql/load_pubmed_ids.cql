@@ -15,7 +15,7 @@ MERGE (p:Publication {pub_id: toInteger(nodeRecord.`PMID`)})
 SET p:PubMed
 MERGE (ge)-[r:HAS_PUBLICATION]->(p)
 ',
-{batchSize:4000, iterateList:true, parallel:true});
+{batchSize:4000, iterateList:true});
 
 // UniProtEntry PubMed placeholders
 MATCH (uni:UniProtEntry) WHERE uni.pubmed_ids <> ' '
@@ -44,7 +44,7 @@ MERGE (p:Publication {pub_id: toInteger(nodeRecord.PubMed_ID)})
 SET p:PubMed
 MERGE (eg)-[r:HAS_PUBLICATION]->(p)
 ',
-{batchSize:4000, iterateList:true, parallel:true});
+{batchSize:4000, iterateList:true});
 
 
 // HGNC PubMed placeholders
