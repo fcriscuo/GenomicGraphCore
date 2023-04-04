@@ -64,7 +64,7 @@ SET ge.chromosome = nodeRecord.`Chromosome`
 ',
 {batchSize:4000, iterateList:true});
 
-// Add the cytogenetic location to Genomic Entity
+// Add the cytogenetic location property to Genomic Entity
 CALL apoc.periodic.iterate('
 CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DAVID/GeneSymbol/OFFICIAL_GENE_SYMBOL2CYTOGENETIC_LOCATION.tsv",
 { header:true,  sep:"TAB"}
@@ -73,5 +73,33 @@ YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
 ','
 MATCH (ge:GenomicEntity) where ge.gene_symbol = nodeRecord.`GeneSymbol`
 SET ge.cytogenetic_location = nodeRecord.`CytogeneticLocation`
+',
+{batchSize:4000, iterateList:true});
+
+// Supplement GenomicEntity properties with GENCODE gene data
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/GENCODE/gencode_gene.tsv",
+{ header:true,  sep:"TAB"}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+MATCH (ge:GenomicEntity) where ge.gene_symbol = nodeRecord.`GeneSymbol`
+SET ge.gene_type = nodeRecord.`GeneType`,
+ge.ensembl_gene_id = nodeRecord.`GeneId`,
+ge.start = toInteger(nodeRecord.`Start`),
+ge.end = toInteger(nodeRecord.`End`),
+ge.strand = nodeRecord.`Strand`
+',
+{batchSize:4000, iterateList:true});
+
+// Add Entrez Gene Summary property to GenomicEntity nodes
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DAVID/GeneSymbol/OFFICIAL_GENE_SYMBOL2ENTREZ_GENE_SUMMARY.tsv",
+{ header:true,  sep:"TAB"}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+MATCH (ge:GenomicEntity) where ge.gene_symbol = nodeRecord.`GeneSymbol`
+SET ge.entrez_gene_summary = nodeRecord.`GeneSummary`
 ',
 {batchSize:4000, iterateList:true});
