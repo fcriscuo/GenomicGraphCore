@@ -20,11 +20,11 @@ abstract class OntologyFileLoader() {
 
     fun loadOntologyData() {
         val database = Neo4jPropertiesService.neo4jDatabase
-        println("Disease Ontology data will now be loaded from: $localFilename  into the $database Neo4j database")
+        println("Ontology data will now be loaded from: $localFilename  into the $database Neo4j database")
         val stopwatch = Stopwatch.createStarted()
         OboTermLoader(localFilename, ontologyName, labelList).loadOboTerms()
         println(
-            "Disease Ontology data has been loaded into Neo4j in ${stopwatch.elapsed(TimeUnit.SECONDS)} " +
+            "Ontology data has been loaded into Neo4j in ${stopwatch.elapsed(TimeUnit.SECONDS)} " +
                     "seconds."
         )
     }

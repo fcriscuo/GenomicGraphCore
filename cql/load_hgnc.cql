@@ -63,10 +63,36 @@ hgnc.agr=nodeRecord.agr,
 hgnc.mane_select=nodeRecord.mane_select,
 hgnc.gencc=nodeRecord.gencc
 ',
-{batchSize:4000, iterateList:true, parallel:true});
+{batchSize:4000, iterateList:true});
 
 // Hgnc -> HgncGeneGroup relationship
 MATCH (h:Hgnc) WHERE h.gene_groups IS NOT NULL
 UNWIND h.gene_groups AS group
 MERGE (hg:HgncGeneGroup{gene_group: group})
 MERGE (h)-[r:BELONGS_TO_GENE_GROUP]->(hg)
+
+// Add gene description property from Alliance of Genome Resources
+// https://www.alliancegenome.org/downloads
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/Alliance/GENE-DESCRIPTION-TSV_HUMAN.tsv", { header:true,  sep:"TAB"}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+WHERE NOT nodeRecord.`GeneId` IS NULL
+MATCH (h:Hgnc) WHERE h.hgnc_id = nodeRecord.`GeneId`
+SET h.gene_description = nodeRecord.`GeneDescription`
+',
+{batchSize:4000, iterateList:true });
+
+// Add Hgnc -[association_type]-> DiseaseOntology
+// from Alliance data
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/Alliance/DISEASE-ALLIANCE_HUMAN_25.tsv", { header:true,  sep:"TAB"})
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+WHERE NOT nodeRecord.`DBObjectID` IS NULL
+MATCH (h:Hgnc) WHERE h.hgnc_id = nodeRecord.`DBObjectID`
+MATCH (do:DiseaseOntologyTerm) where do.obo_id = nodeRecord.`DOID`
+MERGE (h)-[r:HAS_DISEASE_ASSOCIATION { association_type: nodeRecord.`AssociationType`}]->(do)
+',
+{batchSize:4000, iterateList:true });

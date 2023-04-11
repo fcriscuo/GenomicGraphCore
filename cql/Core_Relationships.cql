@@ -7,19 +7,6 @@
 //
 //
 
-// relationship to UniProt via mapa_geneid_4_uniprot_crossref.tsv
-// UniProt -> DisGeNetGene
-CALL apoc.periodic.iterate('
-CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/DisGeNet/mapa_geneid_4_uniprot_crossref.tsv", 
-{ header:true,  sep:"TAB"}
-)
-YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
-','
-MATCH (gene:DisgenetGene) WHERE ltrim(gene.ncbi_gene_id) = ltrim(nodeRecord.GENEID)
-MATCH (uni:UniProtEntry) WHERE uni.entry_id = nodeRecord.UniProtKB
-MERGE (uni)-[r1:HAS_DISGENET_GENE]->(gene)
-',
-{batchSize:4000, iterateList:true, parallel:true});
 
 // GenomicEntity -> HGNC
 MATCH(hgnc:Hgnc) WHERE hgnc.gene_symbol IS NOT NULL
@@ -62,6 +49,7 @@ MERGE (ge)-[r:HAS_ENTREZ_GENE]->(eg)
 MATCH (gene:NHGRI_Gene) WHERE gene.gene_symbol IS NOT NULL
 MATCH (ge:GenomicEntity) WHERE ge.gene_symbol = gene.gene_symbol
 MERGE (ge)-[r1:HAS_NHGRI_GENE]->(hgene)
+;
 
 
 // GenomicEntity -> UniProtEntry relationship

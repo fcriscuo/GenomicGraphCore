@@ -103,3 +103,20 @@ MATCH (ge:GenomicEntity) where ge.gene_symbol = nodeRecord.`GeneSymbol`
 SET ge.entrez_gene_summary = nodeRecord.`GeneSummary`
 ',
 {batchSize:4000, iterateList:true});
+
+// Create gene to gene interaction relationships using BioGRID data
+// https://thebiogrid.org/
+// Stark C, Breitkreutz BJ, Reguly T, Boucher L, Breitkreutz A, Tyers M. Biogrid: A General Repository for Interaction Datasets. Nucleic Acids Res. Jan 1, 2006; 34:D535-9.
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/BioGRID/BIOGRID-ORGANISM-Homo_sapiens-4.4.220.tab3.tsv",
+{ header:true,  sep:"TAB"}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+MATCH (ge1:GenomicEntity) WHERE ge1.gene_symbol = nodeRecord.`Official Symbol Interactor A`
+MATCH (ge2:GenomicEntity) WHERE ge2.gene_symbol = nodeRecord.`Official Symbol Interactor B`
+WHERE NOT (ge2)-[:INTERACTS_WITH]-(ge1)
+CREATE (ge1)-[:INTERACTS_WITH {pub_id: toInteger(replace(nodeRecord.`Publication Source`,"PUBMED:",""))}]-(ge2)
+
+',
+{batchSize:4000, iterateList:true});
