@@ -20,6 +20,8 @@ MERGE (ge)-[r:HAS_PUBLICATION]->(p)
 // UniProtEntry PubMed placeholders
 MATCH (uni:UniProtEntry) WHERE uni.pubmed_ids <> ' '
 UNWIND uni.pubmed_ids AS pubmed_id
+WITH pubmed_id
+WHERE pubmed_id IS NOT NULL AND pubmed_id <> ''
 MERGE (p:Publication:PubMed{pub_id:toInteger(ltrim(pubmed_id))})
 ON CREATE
   SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),
@@ -51,6 +53,8 @@ MERGE (eg)-[r:HAS_PUBLICATION]->(p)
 // create a Publication/PubMed placeholder node if pub_id is novel
 match (h:Hgnc) where h.pubmed_ids <> " "
 unwind h.pubmed_ids AS pubmed_id
+WITH pubmed_id
+  WHERE pubmed_id IS NOT NULL AND pubmed_id <> ''
 merge (p:Publication:PubMed{pub_id:toInteger(pubmed_id)})
 ON CREATE
   SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),
@@ -62,6 +66,8 @@ merge (h) - [r:HAS_PUBLICATION] -> (p)
 //Create Publication placeholder nodes if pub_id is novel
 match (gene:NHGRI_Gene) where gene.pub_ids IS NOT NULL
 unwind gene.pub_ids AS pubmed_id
+WITH pubmed_id
+  WHERE pubmed_id IS NOT NULL AND pubmed_id <> ''
 merge (p:Publication:PubMed{pub_id:toInteger(pubmed_id)})
 ON CREATE
   SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),

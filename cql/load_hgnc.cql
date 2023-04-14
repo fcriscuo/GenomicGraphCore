@@ -34,7 +34,7 @@ hgnc.ucsc_id=nodeRecord.ucsc_id,
 hgnc.refseq_accession=nodeRecord.refseq_accession,
 hgnc.ccds_ids=nodeRecord.ccds_id,
 hgnc.uniprot_ids=nodeRecord.uniprot_ids,
-hgnc.pubmed_ids=nodeRecord.pubmed_ids,
+hgnc.pubmed_ids=nodeRecord.pubmed_id,
 hgnc.mgd_id=nodeRecord.mgd_id,
 hgnc.rgd_id=nodeRecord.rgd_id,
 hgnc.lsdb=nodeRecord.lsdb,
@@ -68,6 +68,8 @@ hgnc.gencc=nodeRecord.gencc
 // Hgnc -> HgncGeneGroup relationship
 MATCH (h:Hgnc) WHERE h.gene_groups IS NOT NULL
 UNWIND h.gene_groups AS group
+WITH group
+WHERE group IS NOT NULL AND group <> ''
 MERGE (hg:HgncGeneGroup{gene_group: group})
 MERGE (h)-[r:BELONGS_TO_GENE_GROUP]->(hg)
 

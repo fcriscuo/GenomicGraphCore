@@ -68,6 +68,10 @@ SET uni.dbSnpList = uni.dbSnpList + genomiccore.resolvedbSnpUrl(snp)
 MATCH (uni:UniProtEntry) WHERE uni.interacts_with IS NOT NULL
 UNWIND uni.interacts_with AS target_id
 WITH uni, target_id
+WHERE target_id IS NOT NULL AND target_id <> ''
 MATCH (target:UniProtEntry) WHERE  target.entry_id = target_id
+WITH target, uni
+WHERE NOT (target)-[:INTERACTS_WITH]->(uni)
 MERGE (uni)-[r:INTERACTS_WITH]->(target)
 ;
+

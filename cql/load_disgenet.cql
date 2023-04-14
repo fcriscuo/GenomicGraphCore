@@ -77,7 +77,7 @@ MERGE (dis:DisgenetDisease {disease_id: nodeRecord.diseaseId})
 SET dis.disease_type = nodeRecord.type,
   dis.disease_class_msh = nodeRecord.diseaseClassMSH,
   dis.disease_class_name_msh =nodeRecord.diseaseClassNameMSH,
-  dis.hpo_class_ids =nodeRecord.hpoClassId,
+  dis.hpo_class_ids = nodeRecord.hpoClassId,
   dis.hpo_class_names = nodeRecord.hpoClassName,
   dis.do_class_ids = nodeRecord.doClassId,
   dis.do_class_names = nodeRecord.doClassName,
@@ -105,6 +105,8 @@ ON MATCH SET dis.disease_type = nodeRecord.diseaseType,
 // DisGenetDisease -> HPO relationship
 MATCH (dis:DisgenetDisease) where dis.hpo_class_ids IS NOT NULL
 UNWIND dis.hpo_class_ids AS hpo_id
+WITH hpo_id
+  WHERE hpo_id IS NOT NULL AND hpo_id <> ''
 MATCH (hpo:HumanPhenotypeTerm) WHERE hpo.obo_id = hpo_id
 MERGE (dis)-[r:HAS_HPO_TERM]->(hpo)
 
@@ -112,8 +114,10 @@ MERGE (dis)-[r:HAS_HPO_TERM]->(hpo)
 // DidGenetDisease -> DiseaseOntology
 MATCH (dis:DisgenetDisease) where dis.do_class_ids IS NOT NULL
 UNWIND dis.do_class_ids AS class_id
+WITH class_id
+  WHERE class_id IS NOT NULL AND class_id <> ''
 MATCH (do:DiseaseOntologyTerm) where do.obo_id = class_id
-MERGE (dis)-[r:HAS_DISEASE_ONTOLOGY_TERM]-(do)
+MERGE (dis)-[r:HAS_DISEASE_ONTOLOGY_TERM]->(do)
 ;
 
 // DisGenetGene -> DisGenetVariant relationship

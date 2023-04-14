@@ -115,8 +115,11 @@ YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
 ','
 MATCH (ge1:GenomicEntity) WHERE ge1.gene_symbol = nodeRecord.`Official Symbol Interactor A`
 MATCH (ge2:GenomicEntity) WHERE ge2.gene_symbol = nodeRecord.`Official Symbol Interactor B`
+WITH ge1, ge2, nodeRecord
 WHERE NOT (ge2)-[:INTERACTS_WITH]-(ge1)
-CREATE (ge1)-[:INTERACTS_WITH {pub_id: toInteger(replace(nodeRecord.`Publication Source`,"PUBMED:",""))}]-(ge2)
-
+MERGE (ge1)-[r:INTERACTS_WITH]-(ge2)
+WITH r, nodeRecord
+WHERE nodeRecord.`Publication Source` IS NOT NULL
+SET r.pub_id = toInteger(replace(nodeRecord.`Publication Source`,"PUBMED:",""))
 ',
 {batchSize:4000, iterateList:true});
