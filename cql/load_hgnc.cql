@@ -98,3 +98,17 @@ MATCH (do:DiseaseOntologyTerm) where do.obo_id = nodeRecord.`DOID`
 MERGE (h)-[r:HAS_DISEASE_ASSOCIATION { association_type: nodeRecord.`AssociationType`}]->(do)
 ',
 {batchSize:4000, iterateList:true });
+
+// Supplement corresponding GenomicEntity collection of Publication/PubMed relationships
+// create a Publication/PubMed placeholder node if pub_id is novel
+match (h:Hgnc) where h.pubmed_ids <> " "
+unwind h.pubmed_ids AS pubmed_id
+WITH pubmed_id, h
+  WHERE pubmed_id IS NOT NULL AND pubmed_id <> ''
+merge (p:Publication:PubMed{pub_id:toInteger(pubmed_id)})
+  ON CREATE
+  SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),
+  p.needs_properties=true, p.needs_references=true
+MATCH (ge:GenomicEntity) WHERE ge.gene_symbol = hjnc.gene_symbol
+merge (ge)-[r:HAS_PUBLICATION]->(p)
+;

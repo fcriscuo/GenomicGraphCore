@@ -28,4 +28,24 @@ SET eg.ncbi_gene_url = genomiccore.resolveNcbiGeneUrl(ltrim(nodeRecord.GeneID)),
 ',
 {batchSize:4000, iterateList:true});
 
+// Supplement GenomicEntity -> Publication relationships
+// Create a new Publication/PubMed node if novel
+// to filter human (i.e. tax id 9606) from gene2pub file downloaded from NCBI
+// grep "^9606\t" gene2pubmed > human_gene2pubmed.tsv
+CALL apoc.periodic.iterate('
+CALL apoc.load.csv("/Volumes/Sea5TBExt/GenomicCoreData/Entrez/Gene/human_gene2pubmed.tsv", { header:true,sep:"TAB"}
+)
+YIELD lineNo, map AS nodeRecord RETURN nodeRecord, lineNo
+','
+WHERE NOT nodeRecord.`PubMed_ID` IS NULL
+MATCH (eg:EntrezGene) WHERE eg.gene_id = nodeRecord.GeneID
+MERGE (p:Publication {pub_id: toInteger(nodeRecord.PubMed_ID)})
+  ON CREATE
+  SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),
+  p.needs_properties=true, p.needs_references=true
+SET p:PubMed
+MATCH (ge:GenomicEntity) WHERE ge.gene_symbol = eg.gene_symbol
+MERGE (ge)-[r:HAS_PUBLICATION]->(p)
+',
+{batchSize:4000, iterateList:true});
 

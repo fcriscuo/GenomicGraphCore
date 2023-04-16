@@ -32,3 +32,16 @@ SET gene.hgnc_id = apoc.text.join(["HGNC",nodeRecord.`HGNC ID`],":"),
 ',
 {batchSize:4000, iterateList:true});
 
+//Supplement GenomicEntity collection of Publication/PubMed relationships
+//Create Publication placeholder nodesif pub_id is novel
+MATCH (gene:NHGRI_Gene)
+  WHERE gene.pub_ids IS NOT NULL AND NOT isEmpty(gene.pub_ids)
+UNWIND gene.pub_ids AS pub_id
+WITH pub_id, gene
+  WHERE pub_id IS NOT NULL AND toInteger(ltrim(pub_id)) IS NOT NULL
+MERGE (p:Publication:PubMed{pub_id:toInteger(ltrim(pub_id))})
+  ON CREATE SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)), p.needs_properties=true, p.needs_references=true
+MATCH (ge:GenomicEntity) WHERE ge.gene_symbol = gene.gene_symbol
+MERGE (ge)-[r2:HAS_PUBLICATION]->(p)
+;
+

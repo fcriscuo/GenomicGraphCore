@@ -1,0 +1,43 @@
+query:
+MATCH (n)
+UNWIND keys(n) AS key
+RETURN labels(n)[0] AS label, collect(distinct key) AS propertyKeys
+UNION
+MATCH ()-[r]->()
+UNWIND keys(r) AS key
+RETURN type(r) AS label, collect(distinct key) AS propertyKeys
+
+label propKeys
+"CosmicHallmark"	["impact", "description", "pub_id", "hallmark", "gene_symbol", "halmark_id", "cell_type"]
+"CosmicStructuralMutation"	["sample_name", "sample_id", "mutation_type", "description", "mutation_id", "pub_id", "GRCh", "tumor_id"]
+"CosmicSampleClassification"	["hist_subtype1", "histology", "EFO", "hist_subtype3_cosmic", "his_subtype3_cosmic", "nci_code", "histology_cosmic", "site_subtype3_cosmic", "cosmic_phenotype_id", "hist_subtype1_cosmic", "site_primary_cosmic", "site_subtype2_cosmic", "hist_subtype2", "hist_subtype3", "site_subtype1_cosmic", "site_subtype33", "url", "site_primary", "site_subtype1", "site_subtype2"]
+"CosmicSampleMutationCollection"	["sample_name", "sample_id"]
+"CosmicPatient"	["individual_remark", "gender", "tumor_id", "environmental_variables", "therapy", "family", "normal_tissue_tested", "individual_id", "metastatic_site", "ethnicity", "age"]
+"Tumor"	["tumor_id", "grade", "age_at_tumor_recurrence", "stage", "nci_code", "drug_response"]
+"CosmicSample"	["sample_name", "therapy_relationship", "sample_differentiator", "sample_type", "cosmic_phenotype_id", "tumor_id", "whole_exome_screen", "sample_remark", "germline_mutation", "sample_id", "mutation_allele_specification", "msi", "whole_genome_screen"]
+"CosmicGeneMutationCollection"	["gene_symbol"]
+"CosmicGene"	["mutation_types", "translocation_partners", "tissue_type", "molecular_genetics", "role_in_cancer", "germline", "tumor_types_somatic", "tumor_types_germline", "cancer_syndrome", "tier", "chr_band", "somatic", "entrez_gene_id", "genome_location", "gene_symbol", "gene_name", "cosmic gene name", "cosmic_url", "synonyms", "is_hallmark", "other_germline_mut", "other_syndromes", "cosmic_id"]
+"HallmarkGeneCollection"	["gene_symbol"]
+"GenomicEntity"	["chromosome", "entrez_gene_summary", "genecards_url", "gene_name", "gene_symbol", "strand", "ensembl_gene_id", "gene_type", "end", "cytogenetic_location", "start"]
+"Hgnc"	["pubmed_ids", "cd", "lncrnadb", "intermediate_filament_db", "imgt", "iuphar", "kznf_gene_catalog", "mamit_trnadb", "pseudogene_org", "horde_id", "merops", "homeodd", "snornabase", "orphanet", "bioparadigms_slc", "rgd_id", "omim_id", "mirbase", "refseq_accession", "mgd_id", "vega_id", "cosmic", "ensembl_gene_id", "lsdb", "location_sortable", "ucsc_id", "locus_type", "uniprot_ids", "locus_group", "entrez_id", "hgnc_id", "location", "gene_name", "gene_groups", "gene_symbol", "ccds_ids", "gene_group_ids", "mane_select", "gencc", "alias_symbols", "alias_names", "lncipedia", "gtrnadb", "agr"]
+"HgncGeneGroup"	["gene_group"]
+"Publication"	["pub_id", "url", "needs_properties", "needs_references", "last_mod"]
+"OboTerm"	["last_mod", "name", "created", "url", "obo_id", "comment", "definition"]
+"OboSynonymCollection"	["created", "obo_id"]
+"OboSynonym"	["text", "syn_key", "created", "type", "last_mod"]
+"OboXrefCollection"	["created", "obo_id"]
+"OboXref"	["source", "xref_id", "created", "url", "xref_key", "description"]
+"Gene"	["pli", "protein_class", "dsi", "dpi", "ncbi_gene_id", "gene_symbol", "ncbi_gene_url", "number_of_diseases", "number_of_pmids", "nhgri_gene_url", "intervention_categories", "comments", "intervention_rationales", "pub_ids", "age_group", "allelic_conditions", "manifestation_categories", "entrez_id", "conditions", "hgnc_id", "inheritance", "description", "gene_id", "hgnc_gene_name", "chromosome", "hgnc_symbol", "nomenclature_status", "other_designations", "map_location", "type_of_gene", "synonyms", "locus_tag", "db_xrefs"]
+"DisgenetVariant"	["snp_id", "chromosome", "most_severe_consequence", "number_of_diseases", "number_of_pmids", "class", "dbsnp_url", "position", "dsi", "dpi"]
+"DisgenetDisease"	["disease_semantic_type", "number_of_genes", "umls_semantic_type_name", "number_of_pmids", "hpo_class_names", "do_class_names", "umls_semantic_type_id", "disease_class_msh", "disease_class_name_msh", "hpo_class_ids", "do_class_ids", "disease_id", "disease_type", "code", "vocabulary_name", "disease_name", "vocabulary"]
+"Reactome"	["reactome_id", "reactome_url", "reactome_pathway"]
+"UniProtEntry"	["dbSnpUrlList", "dbSNPs", "hgnc_ids", "pharos_id", "alpha_fold_urls", "alpha_fold_ids", "pdb", "entry_id", "gene_names", "interacts_with", "gene_ontology_ids", "embl_ids", "uniprot_emtry_url", "gene_symbol", "protein_names", "reactome_id", "entry_name", "pubmed_ids"]
+"testNode"	["id"]
+"CosmicMutation"	["HGVSG", "tumor_origin", "HGVSP", "HGVSC", "mutation_somatic_status", "study_id", "mutation_genome_position", "mutation_strand", "resistance_mutation", "mutation_description", "Mutation zygosity", "LOH", "mutation_cds", "mutation_aa", "genomic_mutation_id", "legacy_mutation_id", "primary_site", "primary_histology", "accession_number", "genome_screen", "hgnc_id", "tier", "sample_type", "cds_length", "GRCh", "sample_name", "tumor_id", "sample_id", "mutation_id", "gene_symbol", "pub_id", "Age"]
+"CosmicActionability"	["mutation_remark", "fusion_id", "drug_trial_url", "actionability_id", "classification_id", "last_update", "blood_response", "response_value", "timepoinr", "genomic_mutation_id", "obj_rr_treat", "rfs_hr", "rfs_ci", "rfs_pval", "dcr_pval", "os_hr", "os_ci", "os_pval", "ttp_ci", "source", "ttp_pval", "dor_pval", "pfs_ci", "pfs_pval", "ttp_hr", "orr_ci", "orr_pval", "gene_symbol", "primary_outcome_measure", "treatment_history", "treated_number", "control_treatment", "results_availability", "progression_remark", "source_type", "number_of_patients", "trial_id", "completion_status", "patient_prescreening", "drug_combination", "testing_required", "trial_status", "disease", "mutation_aa_syntax", "actionability_rank", "development_status", "orr_treat", "pfs_treat", "pr_count", "sd_count", "cr_count", "pfs_con", "orr_con", "control_number", "os_con", "os_treat", "dcr_treat", "dcr_con", "dor_treat", "dor_con", "rfs_treat", "ttp_treat", "rfs_con", "ttp_con", "dor_ci"]
+"CosmicBreakpointMutation"	["location_from_max", "strand_from", "tumor_id", "breakpoint_order", "chrom_from", "location_from_min", "GRCh", "sample_name", "mutation_type", "non-templated_ins_seq", "sample_id", "mutation_id", "pub_id", "chrom_to", "location_to_min", "location_to_max", "strand_to"]
+"CosmicCMC"	["mutation_aa", "genomic_mutation_id", "legacy_mutation_id", "accession_number", "gene_symbol", "cosmic_sample_mutated", "mutation_genome_position_grch37", "mutation_genome_position_grch38", "mutation_description_aa", "cosmic_sample_tested", "mutation_description_cds", "ontology_mutation_code", "genomic_wt_allele_seq", "genomic_mut_allele_seq", "aa_wt_allele_seq", "aa_mut_allele_seq", "muation_cds", "aa_mut_stop", "shared_aa", "disease", "onc_tsg", "mutation_url", "aa_mut_start", "cgc_tier"]
+"HAS_GO_TERM"	["type"]
+"HAS_DISGENET_VARIANT"	["source"]
+"HAS_DISEASE_ASSOCIATION"	["association_type"]
+"INTERACTS_WITH"	["pub_id"]

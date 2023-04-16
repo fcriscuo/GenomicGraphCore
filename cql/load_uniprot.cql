@@ -75,3 +75,16 @@ WHERE NOT (target)-[:INTERACTS_WITH]->(uni)
 MERGE (uni)-[r:INTERACTS_WITH]->(target)
 ;
 
+// Supplement GenomicEntity's collection of Publication/PubMed relationships
+// Create Publication placeholder nodes if Publication is novel
+MATCH (uni:UniProtEntry) WHERE uni.pubmed_ids <> ' '
+UNWIND uni.pubmed_ids AS pubmed_id
+WITH pubmed_id, uni
+  WHERE pubmed_id IS NOT NULL AND pubmed_id <> ''
+MERGE (p:Publication:PubMed{pub_id:toInteger(ltrim(pubmed_id))})
+  ON CREATE
+  SET p.url= genomiccore.resolvePubmedUrl(toString(p.pub_id)),
+  p.needs_properties=true, p.needs_references=true
+MATCH (ge:GenomicEntity) WHERE ge.gene_symbol = uni.gene_symbol
+MERGE (ge)-[r:HAS_PUBLICATION]->(p)
+;
